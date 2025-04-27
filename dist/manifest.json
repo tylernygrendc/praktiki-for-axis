@@ -1,0 +1,37 @@
+{
+    "manifest_version": 3,
+    "name": "The AXIS Extension",
+    "description": "Simplify and extend The Joint's electronic systems.",
+    "author": "tylernygren@gmail.com",
+    "version": "1.0",
+    "action": {
+        "default_icon": "assets/action-icon.png",
+        "default_title": "The AXIS Extension"
+    },
+    "content_scripts": [
+        {
+            "js": ["content.js"],
+            "css": ["content.css"],
+            "matches": [
+                "https://axis.thejoint.com/*",
+                "https://backoffice.thejoint.com/*"
+            ]
+        }
+    ],
+    "permissions": ["activeTab"],
+    "background":{
+        "service_worker": "background.js"
+    },
+    "web_accessible_resources": [
+    {
+      "resources": [ 
+        "assets/*",
+        "fonts/*"
+        ],
+      "matches": [ 
+        "https://axis.thejoint.com/*",
+        "https://backoffice.thejoint.com/*"
+      ]
+    }
+  ]
+}

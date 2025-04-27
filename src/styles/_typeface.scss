@@ -1,0 +1,28 @@
+@use "sass:map";
+@use "../../node_modules/@material/web/tokens/md-sys-typescale" as tokens;
+@use "../../node_modules/@material/web/typography/typescale" as typescale;
+
+@font-face {
+    font-family: "Roboto";
+    src: url("../assets/roboto.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Material Symbols";
+    src: url("../assets/material-symbols.woff2") format("woff2");
+}
+
+// md default typescale variables
+:root, :host{
+    @include typescale.theme(tokens.values());
+}
+// md customized typescale variables
+:root, :host {
+    --md-ref-typeface-brand: "Roboto";
+    --md-ref-typeface-plain: "Roboto";
+    --md-icon-font: "Material Symbols";
+}
+
+body{
+    font-family: var(--md-ref-typeface-plain);
+}
