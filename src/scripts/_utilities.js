@@ -1,7 +1,8 @@
-export const alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+export const alphabet = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
 
-export function clearQueue(){
-    getQueue().innerHTML = "";
+export function assertElement(element, expectedInterface = HTMLElement){
+    if(element instanceof expectedInterface) return test;
+    else return expectedInterface;
 }
 export function duplicateNode(node) {
     let clone;
@@ -22,11 +23,9 @@ export function duplicateNode(node) {
     }
 }
 export function getRandomId(){
-    let letters = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"];
-    let leadingLetters = "";
-    for(var i = 0; i < 4; ++i) leadingLetters += letters[Math.floor(Math.random() * 26)];
-    let cryptoString = window.crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
-    return leadingLetters + cryptoString;
+    let randomString = window.crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
+    for(var i = 0; i < 4; ++i) randomString = alphabet[Math.floor(Math.random() * 26)] + randomString;
+    return randomString;
 }  
 export function getQueue(){
     let queue;
