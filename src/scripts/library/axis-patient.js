@@ -1,11 +1,16 @@
 import { App } from "./axis-app";
 import { assertElement } from "../_utilities";
 import { dayNames, daysBetween } from "../_date";
-export class Patient {
-    constructor(app = new App()){
-        this.app = app;
+export class BackOfficePatient {
+    constructor(docRef = document){
+        this.id = "";
+        // basic information
         this.name = "";
+        this.fname = "";
+        this.lname = "";
         this.initials = "";
+        this.finitial = "";
+        this.linitial = "";
         this.dob = null;
         this.age = 0;
         this.sex = "";
@@ -13,19 +18,29 @@ export class Patient {
         this.occupation = "";
         this.phone = "";
         this.email = "";
-        this.hasExamDue = null;
-        this.hasFormsDue = null;
-        this.hasPaymentDue = null;
-        this.isMedicareEligible = null;
         this.address = {
             street: "",
             city: "",
             state: "",
             zip: ""
         };
+        // flags
+        this.hasABNDue = null;
+        this.hasDoNotAdjust = null;
+        this.hasExamDue = null;
+        this.hasFormsDue = null;
+        this.hasPaymentDue = null;
+        this.hasOpenTask = null;
+        this.hasSeeNotesFlag = null;
+        this.isMedicareEligible = null;
+        this.isMilitary = null;
+        this.isNewPatient = null;
+        // general notes
+        this.generalNotes = "";
+        // areas of concern
         this.areasOfConcern = "";
-        this.documents = {};
-        this.familyHistory = [],
+        // intake and other documents
+        this.documentMap = {};
         this.intake = {
             comments: "",
             problemList: [],
@@ -64,6 +79,7 @@ export class Patient {
                 list: []
             }
         }
+        // progress tracking
         this.plan = {
             start: null,
             end: null,
@@ -81,7 +97,7 @@ export class Patient {
             day: null,
             date: null,
             daysSince: null,
-            node: null
+            note: null
         }
         this.problemHistory = {
             reason: null,
@@ -91,186 +107,243 @@ export class Patient {
             goals: [],
             previousProviders: []
         }
+        // business
         this.product = {
             type: null,
             cycleDate: null,
+            hasBalance: null,
+            balanceDue: 0,
             visitsUsed: null,
             visitsRemaining: null,
             pendingCancellation: null
         }
-        this.init(this.app);
+        this.getInformationFromSidebar(docRef)
+            .getAccountDetails(this.fname, this.lname, this.dob)
+            .getAreasOfConcern(docRef)
+            .getDocumentMap(docRef)
+            .getGeneralNotes(docRef)
+            .getIntake(docRef)
+            .getPreviousExamAndVisit(docRef);
     }
-    init(app = new App()){
-        if(app.isBackOffice && app.resource === "create-cert"){
-            // read data from sidebar
-            const patientNode = document.querySelector("#patientInfoSideTopBar");
-            if(patientNode != null){
-                for(const child of patientNode.parentElement.children){
-                    const [key, val] = child.innerText.split(/:\s/g)
-                    switch(key){
-                        case "Patient Name":
-                            this.name = val;
-                            this.initials = (()=>{ let initials = ""; val.split(/\s/g).some(str => {initials += str.at(0)}); return initials;})()
-                            break;
-                        case "Gender/age":
-                            let [gender, age] = val.split(/\//g);
-                            this.gender = gender;
-                            this.age = age;
-                            break;
-                        case "DOB":
-                            this.dob = val;
-                            break;
-                        case "Occupation":
-                            this.occupation = val;
-                            break;
-                        case "Product Type":
-                            this.product.type = val;
-                            break;
-                        case "Cycle Date":
-                            this.product.cycleDate = val;
-                            break;
-                        case "Pending Cancellation":
-                            this.product.pendingCancellation = /yes/gi.test(val);
-                            break;
-                        case "Last visit date":
-                            const lvd = new Date(val.split(/\//g).reduce((acc, cv, i) => {
-                                if(i) acc = `${cv}-${acc}`;
-                                else acc += cv;
-                                return acc;
-                            },""));
-                            this.previousVisit.day = dayNames[lvd.getDay()];
-                            this.previousVisit.date = lvd;
-                            this.previousVisit.daysSince = daysBetween(lvd, new Date());
-                            break;
-                        case "Next exam date":
-                            let ned = new Date(val.split(/\//g).reduce((acc, cv, i) => {
-                                if(i) acc = `${cv}-${acc}`;
-                                else acc += cv;
-                                return acc;
-                            },""));
-                            this.plan.end = ned;
-                            ned = Math.ceil(daysBetween(ned, new Date()) / 7);
-                            this.plan.weeksRemaining = ned > 0 ? ned : 0;
-                            break;
-                        case "Treatment":
-                            this.plan.duration = val.split(/for a total of\s/gi)[1];
-                            break;
-                        case "Visits in current treatment":
-                            let [used, total] = val.split(/\//g);
-                            this.plan.usedVisits = used;
-                            this.plan.totalVisits = total;
-                            this.plan.visitsRemaining = total - used;
-                            break;
-                    }
+    getInformationFromSidebar(docRef = document){
+        const patientNode = document.querySelector("#patientInfoSideTopBar");
+        if(patientNode != null){
+            for(const child of patientNode.parentElement.children){
+                const [key, val] = child.innerText.split(/:\s/g)
+                switch(key){
+                    case "Patient Name":
+                        this.name = val;
+                        [this.fname, this.lname] = /^\s*(\w+)|\b(\w+)(?=\S*$)/g.exec(val);
+                        [this.finitial, this.linitial] = /^\s*(\w)|\b(\w)(?=\S*$)/g.exec(val);
+                        this.initials = String(this.finitial.toUpperCase()) + String(this.linitial).toUpperCase();
+                        break;
+                    case "Gender/age":
+                        [this.gender, this.age] = val.split(/\//g);
+                        break;
+                    case "DOB":
+                        this.dob = val;
+                        break;
+                    case "Occupation":
+                        this.occupation = val;
+                        break;
+                    case "Product Type":
+                        this.product.type = val;
+                        break;
+                    case "Cycle Date":
+                        this.product.cycleDate = val;
+                        break;
+                    case "Pending Cancellation":
+                        this.product.pendingCancellation = /yes/gi.test(val);
+                        break;
+                    case "Last visit date":
+                        this.previousVisit.date = new Date(val.split(/\//g).reduce((acc, cv, i) => {
+                            if(i) acc = `${cv}-${acc}`;
+                            else acc += cv;
+                            return acc;
+                        },""));
+                        this.previousVisit.day = dayNames[this.previousVisit.date.getDay()];
+                        this.previousVisit.daysSince = daysBetween(this.previousVisit.date, new Date());
+                        break;
+                    case "Next exam date":
+                        this.plan.end = new Date(val.split(/\//g).reduce((acc, cv, i) => {
+                            if(i) acc = `${cv}-${acc}`;
+                            else acc += cv;
+                            return acc;
+                        },""));
+                        this.plan.weeksRemaining = Math.ceil(daysBetween(this.plan.end, new Date()) / 7);
+                        break;
+                    case "Treatment":
+                        this.plan.duration = val.split(/for a total of\s/gi)[1];
+                        break;
+                    case "Visits in current treatment":
+                        [this.plan.usedVisits, this.plan.totalVisits] = val.split(/\//g);
+                        this.plan.visitsRemaining = this.plan.totalVisits - this.plan.usedVisits;
+                        break;
                 }
             }
-            // get areas of concern
-            this.areasOfConcern = assertElement("textarea[name=spinal_concern_c]").value;
-            // get general notes
-            this.generalNotes = assertElement("textarea#generalNotes").value;
-            // get most recent visit and exam
-            document.querySelectorAll("tbody#visitsTable tr").forEach(async (tr, i) => {
-                if(i === 0) this.previousVisit.note = new BackOfficeVisit(tr.dataset.visit_id);
-                if(/E/gi.test(tr.querySelectorAll("td")[1].innerText) && this.previousExam.date === null) {
-                    this.previousExam.note = new BackOfficeVisit(tr.dataset.visit_id);
-                }
-            });
-            // get documents from document list
-            document.querySelectorAll("tbody#patientDocList tr").forEach(tr => {
-                let [fileName, category, date] = tr.querySelectorAll("td");
-                if(/other/gi.test(category.innerText)){
-                    if(/wr|review/gi.test(fileName.innerText) && !(/wr/gi.test(this.initials))){
-                        category = "Wellness Review";
-                    } else if(/id|license|photo/gi.test(fileName.innerText)){
-                        category = "Driver's License";
-                    } else {
-                        category = "Other";
-                    }
-                }
-                Object.assign(this.documents[category], {
-                    fileName: fileName.innerText,
-                    date: date.innerText,
-                    href: `https://backoffice.thejoint.com/get-patient-doc/${tr.dataset.document_id}/${tr.dataset.document_name}`
-                });
-            });
-            // get problem list from intake
-            document.querySelectorAll("#pills-beta_patient_hx #complaint_areas tbody tr").forEach((tr, i) => {
-                tr.querySelectorAll("td").forEach(td => {
-                    if(td.children.length) Object.assign(this.intake.problemList[i],{[td.firstChild.name]: td.firstChild.value});
-                    else Object.assign(this.intake.problemList[i],{"name": td.innerText});
-                });
-            });
-            // get doctor comments from intake
-            this.intake.comments = assertElement(document.querySelector("#pills-beta_patient_hx textarea#dc_notes")).value;
-            // get pregnancy due date from intake
-            this.intake.pregnancyDueDate = assertElement(document.querySelector("#pregnancy_due_date")).value;
-            // get reason for seeking care, musculoskeletal history, medical history, family history, and review of systems from intake
-            document.querySelectorAll("#pills-beta_patient_hx input[type=checkbox]").forEach(input => {
-                if(input.checked){
-                    if(/reason/gi.test(input.name)){
-                        this.intake.reason = input.parentElement.innerText;
-                    } else if(/history/gi.test(input.name)){
-                        this.intake.mskHistory.exists = true;
-                        if(!(/na\W/gi.test(input.name))) this.intake.mskHistory.list.push(String(input.parentElement.innerText).replace(/\/discomfort/gi,""));    
-                    } else if(/^c/gi.test(input.name)){
-                        this.intake.medicalHistory.exists = true;
-                        if(!(/na\W/gi.test(input.name)) && !(/other\W/gi.test(input.name))) this.intake.medicalHistory.list.push(input.parentElement.innerText);
-                        else if(/other\W/gi.test(input.name)) this.intake.medicalHistory.list.push(assertElement(document.querySelector("#pills-beta_patient_hx textarea[name=callergiesdesc]")).value);
-                    } else if(/^fh/gi.test(input.name)){
-                        this.intake.familyHistory.exists = true;
-                        if(!(/na\W/gi.test(input.name))) this.intake.familyHistory.list.push(String(input.parentElement.innerText).replace(/\W\s/gi,""));
-                    } else {
-                        this.intake.reviewOfSystems.exists = true;
-                        if(!(/na\W/gi.test(input.name))) this.intake.reviewOfSystems.list.push(String(input.parentElement.innerText).replace(/\sor\s/gi,"/"));
-                    }
-                }
-            });
-            // get surgical, trauma, and hospitalization histories from intake
-            document.querySelectorAll("#surgeries_details_beta, #bbones_details_beta, #hospitalization_details_beta").forEach(div => {
-                let prop = (() => {
-                    if(/surgeries/gi.test(div.id)) return "surgicalHistory";
-                    else if(/bones/gi.test(div.id)) return "traumaHistory";
-                    else if(/hospitalization/gi.test(div.id)) return "hospitalizationHistory";
-                })();
-                div.parentElement.querySelectorAll("input[type=radio]").forEach(input => {
-                    if(input.checked) this.intake[prop]["exists"] = true;
-                });
-                let textarea = div.parentElement.querySelector("textarea");
-                if(textarea.value) {
-                    const array = assertElement(div.parentElement.querySelector("textarea")).value.split(/\s\-\s|\n/gi);
-                    for(let i = 0; i < array.length; ++i) Object.assign(this.intake[prop]["list"],{[array[i]]:array[++i]});
-                }
-            });
-            // get medication list from intake
-            document.querySelectorAll("input[name=currentprescription]").forEach(input => {
-                if(input.checked) this.intake.medicationHistory.exists = true;
-            });
-            this.intake.medicationHistory.list = String(assertElement(document.querySelector("textarea[name=prescripyes]")).value)
-                .split(/\,|\;/g).reduce((acc, cv) => {
-                    acc.push(cv.replace(/\W\s|\s\W/g,"").toLowerCase()); return acc;
-                },[]);
-            // get disability list and goals from intake
-            document.querySelectorAll("#pills-beta_activity_assessment input[type=checkbox]").forEach(input => {
-                if(input.checked){
-                    if(/condi/gi.test(input.name)){
-                        input.name = String(input.name).replace(/condition_interfering_|condition_difficulties_/gi,"");
-                        switch(input.name){
-                            case "sportshobbies":
-                                this.intake.disability.list.push("recreational activities");
-                                break;
-                            case "lyingdown":
-                                this.intake.disability.list.push("lying down");
-                                break;
-                            default:
-                                this.intake.disability.list.push(input.name);
-                                break;
-                        }
-                    } else if(/goals/gi.test(input.name)){
-                        this.intake.goals.list.push(String(input.name).replace(/goals_/gi,"").replace("_"," "));
-                    }
-                }
-            });
+            this.email = assertElement(docRef.querySelector("button#emailHomeInstructions")).value;
         }
+        return this;
+    }
+    async getAccountDetails(fname = "", lname = "", dob = "", phone = ""){
+        try{
+            let res = await fetch("https://backoffice.thejoint.com/patient-search", {
+                "body": `first_name=${fname}]&last_name=${lname}&dob=${dob}&phone=${phone}`,
+                "method": "POST"
+            });    
+            if(res.ok) res = await res.json();
+            else throw new Error(res.statusText);
+            if(res.search_patients.length === 1) {               
+                this.id = res.search_patients[0].id;
+                this.phone = res.search_patients[0].phone_mobile;
+                // flags
+                this.hasABNDue = res.search_patients[0].abn_c ? true : false;
+                this.hasDoNotAdjust = res.search_patients[0].has_do_not_adjust ? true : false;
+                this.hasFormsDue = res.search_patients[0].needs_forms_c ? true : false;
+                this.hasOpenTask = res.search_patients[0].ot ? true : false;
+                this.hasPaymentDue = res.search_patients[0].pay_flag ? true : false;
+                this.hasSeeNotesFlag = res.search_patients[0].see_notes ? true : false;
+                this.isMedicareEligible = res.search_patients[0].ismedicareeligible_c ? true : false;
+                this.isMilitary = res.search_patients[0].is_military ? true : false;
+                this.isNewPatient = res.search_patients[0].new_patient_flag_c ? true : false;
+                this.product.type = res.search_patients[0].producttype_c;
+                // previous visit
+                this.previousVisit.date = new Date(res.search_patients[0].lastvisitdate_c);
+                this.previousVisit.doctor = `Dr. ${res.search_patients[0].last_dc_name}`;
+                this.previousVisit.id = res.search_patients[0].lastvisitid_c;
+                // product
+                this.product.cycleDate = res.search_patients[0].recurringday;
+                this.product.visitsRemaining = res.search_patients[0].rpv_c;
+                this.product.hasBalance = res.search_patients[0].pay_flag ? true : false;
+                this.product.balanceDue = res.search_patients[0].balance;
+                this.product.careCardsRemaining = res.search_patients[0].carecard_c;
+                this.product.homeClinic = res.search_patients[0].tj_clinics_contacts_1_name;
+            } else {
+                throw new Error("Patient search returned an unexpected number of results.");
+            }
+        } catch (error) {
+            console.error(error);
+        } finally{
+            return this;
+        }
+    }
+    getAreasOfConcern(docRef = document){
+        this.areasOfConcern = assertElement(docRef.querySelector("textarea[name=spinal_concern_c]")).value;
+        return this;
+    }
+    getDocumentMap(docRef = document){
+        docRef.querySelectorAll("tbody#patientDocList tr").forEach(tr => {
+            let [fileName, category, date] = tr.querySelectorAll("td");
+            if(/other/gi.test(category.innerText)){
+                if(/wr|review/gi.test(fileName.innerText) && !(/wr/gi.test(this.initials))){
+                    category = "Wellness Review";
+                } else if(/id|license|photo/gi.test(fileName.innerText)){
+                    category = "Driver's License";
+                } else {
+                    category = "Other";
+                }
+            }
+            Object.assign(this.documentMap[category], {
+                fileName: fileName.innerText,
+                date: date.innerText,
+                href: `https://backoffice.thejoint.com/get-patient-doc/${tr.dataset.document_id}/${tr.dataset.document_name}`
+            });
+        });    
+        return this;
+    }
+    getGeneralNotes(docRef = document){
+        this.generalNotes = assertElement(docRef.querySelector("textarea#generalNotes")).value;
+        return this;
+    }
+    getIntake(docRef = document){
+        // get doctor comments from intake
+        this.intake.comments = assertElement(docRef.querySelector("#pills-beta_patient_hx textarea#dc_notes")).value;
+        // get pregnancy due date from intake
+        this.intake.pregnancyDueDate = assertElement(docRef.querySelector("#pregnancy_due_date")).value;
+        // get problem list from intake
+        docRef.querySelectorAll("#pills-beta_patient_hx #complaint_areas tbody tr").forEach((tr, i) => {
+            tr.querySelectorAll("td").forEach(td => {
+                if(td.children.length) Object.assign(this.intake.problemList[i],{[td.firstChild.name]: td.firstChild.value});
+                else Object.assign(this.intake.problemList[i],{"name": td.innerText});
+            });
+        });
+        // get reason for seeking care, musculoskeletal history, medical history, family history, and review of systems from intake
+        docRef.querySelectorAll("#pills-beta_patient_hx input[type=checkbox]").forEach(input => {
+            if(input.checked){
+                if(/reason/gi.test(input.name)){
+                    this.intake.reason = input.parentElement.innerText;
+                } else if(/history/gi.test(input.name)){
+                    this.intake.mskHistory.exists = true;
+                    if(!(/na\W/gi.test(input.name))) this.intake.mskHistory.list.push(String(input.parentElement.innerText).replace(/\/discomfort/gi,""));    
+                } else if(/^c/gi.test(input.name)){
+                    this.intake.medicalHistory.exists = true;
+                    if(!(/na\W/gi.test(input.name)) && !(/other\W/gi.test(input.name))) this.intake.medicalHistory.list.push(input.parentElement.innerText);
+                    else if(/other\W/gi.test(input.name)) this.intake.medicalHistory.list.push(assertElement(docRef.querySelector("#pills-beta_patient_hx textarea[name=callergiesdesc]")).value);
+                } else if(/^fh/gi.test(input.name)){
+                    this.intake.familyHistory.exists = true;
+                    if(!(/na\W/gi.test(input.name))) this.intake.familyHistory.list.push(String(input.parentElement.innerText).replace(/\W\s/gi,""));
+                } else {
+                    this.intake.reviewOfSystems.exists = true;
+                    if(!(/na\W/gi.test(input.name))) this.intake.reviewOfSystems.list.push(String(input.parentElement.innerText).replace(/\sor\s/gi,"/"));
+                }
+            }
+        });
+        // get surgical, trauma, and hospitalization histories from intake
+        docRef.querySelectorAll("#surgeries_details_beta, #bbones_details_beta, #hospitalization_details_beta").forEach(div => {
+            let prop = (() => {
+                if(/surgeries/gi.test(div.id)) return "surgicalHistory";
+                else if(/bones/gi.test(div.id)) return "traumaHistory";
+                else if(/hospitalization/gi.test(div.id)) return "hospitalizationHistory";
+            })();
+            div.parentElement.querySelectorAll("input[type=radio]").forEach(input => {
+                if(input.checked) this.intake[prop]["exists"] = true;
+            });
+            let textarea = div.parentElement.querySelector("textarea");
+            if(textarea.value) {
+                const array = assertElement(div.parentElement.querySelector("textarea")).value.split(/\s\-\s|\n/gi);
+                for(let i = 0; i < array.length; ++i) Object.assign(this.intake[prop]["list"],{[array[i]]:array[++i]});
+            }
+        });
+        // get medication list from intake
+        docRef.querySelectorAll("input[name=currentprescription]").forEach(input => {
+            if(input.checked) this.intake.medicationHistory.exists = true;
+        });
+        this.intake.medicationHistory.list = String(assertElement(docRef.querySelector("textarea[name=prescripyes]")).value)
+            .split(/\,|\;/g).reduce((acc, cv) => {
+                acc.push(cv.replace(/\W\s|\s\W/g,"").toLowerCase()); return acc;
+            },[]);
+        // get disability list and goals from intake
+        docRef.querySelectorAll("#pills-beta_activity_assessment input[type=checkbox]").forEach(input => {
+            if(input.checked){
+                if(/condi/gi.test(input.name)){
+                    input.name = String(input.name).replace(/condition_interfering_|condition_difficulties_/gi,"");
+                    switch(input.name){
+                        case "sportshobbies":
+                            this.intake.disability.list.push("recreational activities");
+                            break;
+                        case "lyingdown":
+                            this.intake.disability.list.push("lying down");
+                            break;
+                        default:
+                            this.intake.disability.list.push(input.name);
+                            break;
+                    }
+                } else if(/goals/gi.test(input.name)){
+                    this.intake.goals.list.push(String(input.name).replace(/goals_/gi,"").replace("_"," "));
+                }
+            }
+        });
+        return this;
+    }
+    async getPreviousExamAndVisit(docRef = document){
+        // get most recent visit and exam
+        docRef.querySelectorAll("tbody#visitsTable tr").forEach(async (tr, i) => {
+            if(i === 0) this.previousVisit.note = new BackOfficeVisit(tr.dataset.visit_id);
+            if(/E/gi.test(tr.querySelectorAll("td")[1].innerText) && this.previousExam.date === null) {
+                this.previousExam.note = new BackOfficeVisit(tr.dataset.visit_id);
+            }
+        });
+        return this;
     }
 }
 class BackOfficeVisit {
