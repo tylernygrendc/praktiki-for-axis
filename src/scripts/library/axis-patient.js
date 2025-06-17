@@ -1,4 +1,3 @@
-import { App } from "./axis-app";
 import { assertElement } from "../_utilities";
 import { dayNames, daysBetween } from "../_date";
 export class BackOfficePatient {
