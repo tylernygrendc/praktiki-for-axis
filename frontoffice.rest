@@ -1,0 +1,267 @@
+### log in 
+POST https://axis.thejoint.com/rest/v11_24/oauth2/token
+    ?platform=base
+
+{
+    "grant_type":"password",
+    "username":"{{$dotenv username}}",
+    "password":"{{$dotenv password}}",
+    "client_id":"sugar",
+    "platform":"base",
+    "client_secret":"",
+    "current_language":"en_us",
+    "client_info":{"current_language":"en_us"}
+}
+### logout
+POST https://axis.thejoint.com/rest/v11_24/oauth2/logout
+
+{
+    "token": "{{$dotenv autgtoken}}",
+    "refresh_token":"{{$dotenv refreshtoken}}"   
+}
+
+### get user
+GET https://axis.thejoint.com/rest/v11_24/me
+OAuth-Token: {{$dotenv authtoken}}
+### get user clinics
+GET https://axis.thejoint.com/rest/v11_24/Dashboards/enum/clinicslist
+OAuth-Token: {{$dotenv authtoken}}
+### get users in clinic
+GET https://axis.thejoint.com/rest/v11_24/TJ_ClinicUsers/custom/in-clinic-users
+OAuth-Token: {{$dotenv authtoken}}
+### get month performance info (basic)
+GET https://axis.thejoint.com/rest/v11_24//TJ_Clinics/{{$dotenv clinicid}}/info
+OAuth-Token: {{$dotenv authtoken}}
+### get waiting list
+# @prompt maxNum Maximum allowed results (number)
+GET https://axis.thejoint.com/rest/v11_24/TJ_Visits/patient_info
+    ?view=list
+    &erased_fields_=false
+    &filter%5B0%5D%5Bstatus%5D=Waiting%20Queue
+    &filter%5B1%5D%5Btj_clinics_tj_visits_1tj_clinics_ida%5D={{$dotenv clinicid}}
+    &patient_fields%5B%5D=ismedicareeligible_c
+    &patient_fields%5B%5D=new_patient_flag_c
+    &patient_fields%5B%5D=abn_c
+    &patient_fields%5B%5D=do_not_call
+    &patient_fields%5B%5D=needs_forms_c
+    &patient_fields%5B%5D=rpv_c
+    &patient_fields%5B%5D=payment_due
+    &patient_fields%5B%5D=balance
+    &patient_fields%5B%5D=producttype_c
+    &patient_fields%5B%5D=recurringday
+    &patient_fields%5B%5D=is_military
+    &patient_fields%5B%5D=see_notes
+    &patient_fields%5B%5D=mobile_created_c
+    &patient_fields%5B%5D=age_c
+    &fields=average_wait_time%2Cvisit_type%2Chas_do_not_adjust
+    &max_num={{maxNum}}
+OAuth-Token: {{$dotenv authtoken}}
+### get pending list
+# @prompt maxNum Maximum allowed results (number)
+GET https://axis.thejoint.com/rest/v11_24/TJ_Visits/patient_info
+    ?view=list&erased_fields_=false
+    &filter%5B0%5D%5Bstatus%5D=Pending%20Notes
+    &filter%5B1%5D%5Btj_clinics_tj_visits_1tj_clinics_ida%5D={{$dotenv clinicid}}
+    &patient_fields%5B%5D=ismedicareeligible_c&patient_fields%5B%5D=new_patient_flag_c
+    &patient_fields%5B%5D=abn_c&patient_fields%5B%5D=do_not_call
+    &patient_fields%5B%5D=needs_forms_c
+    &patient_fields%5B%5D=rpv_c
+    &patient_fields%5B%5D=payment_due
+    &patient_fields%5B%5D=balance
+    &patient_fields%5B%5D=producttype_c
+    &patient_fields%5B%5D=recurringday
+    &patient_fields%5B%5D=is_military
+    &patient_fields%5B%5D=see_notes&patient_fields%5B%5D=mobile_created_c
+    &patient_fields%5B%5D=age_c
+    &fields=average_wait_time%2Cvisit_type%2Chas_do_not_adjust
+    &max_num={{maxNum}}
+OAuth-Token: {{$dotenv authtoken}}
+### get completed list
+# @prompt maxNum Maximum allowed results (number)
+GET https://axis.thejoint.com/rest/v11_24/TJ_Visits/patient_info
+    ?view=list
+    &erased_fields_=false
+    &filter%5B0%5D%5Bstatus%5D=Completed
+    &filter%5B1%5D%5Bdate_entered%5D%5B%24dateRange%5D=today
+    &filter%5B2%5D%5Btj_clinics_tj_visits_1tj_clinics_ida%5D={{$dotenv clinicid}}
+    &patient_fields%5B%5D=ismedicareeligible_c
+    &patient_fields%5B%5D=new_patient_flag_c
+    &patient_fields%5B%5D=abn_c
+    &patient_fields%5B%5D=do_not_call
+    &patient_fields%5B%5D=needs_forms_c
+    &patient_fields%5B%5D=rpv_c
+    &patient_fields%5B%5D=payment_due
+    &patient_fields%5B%5D=balance
+    &patient_fields%5B%5D=producttype_c
+    &patient_fields%5B%5D=recurringday
+    &patient_fields%5B%5D=is_military
+    &patient_fields%5B%5D=see_notes
+    &patient_fields%5B%5D=mobile_created_c
+    &patient_fields%5B%5D=age_c
+    &fields=average_wait_time%2Cvisit_type%2Chas_do_not_adjust
+    &max_num={{maxNum}}
+OAuth-Token: {{$dotenv authtoken}}
+### get all tasks
+# @prompt maxNum Maximum allowed results (number)
+GET https://axis.thejoint.com/rest/v11_24/Tasks
+    ?erased_fields=true
+    &view=list
+    &fields=parent_name%2Cdescription%2Cparent_type%2Ctask_script_c%2Ctask_disclaimer%2Ctask_type_c%2Cdri_subworkflow_id%2Cfollowing%2Cmy_favorite
+    &max_num={{maxNum}}
+OAuth-Token: {{$dotenv authtoken}}
+### search clinic
+# @prompt clinicNameStart Clinic name (first word only)
+GET https://axis.thejoint.com/rest/v11_24/TJ_Clinics
+    ?erased_fields=true
+    &view=list
+    &fields=following%2Cmy_favorite
+    &max_num=10
+    &order_by=date_modified%3Adesc
+    &filter%5B0%5D%5Bname%5D%5B%24starts%5D={{clinicNameStart}}
+OAuth-Token: {{$dotenv authtoken}}
+### get clinic by id
+GET https://axis.thejoint.com/rest/v11_24/TJ_Clinics/{{$dotenv clinicid}}
+    ?erased_fields=true
+    &view=record
+    # &fields=
+    # &viewed=1
+OAuth-Token: {{$dotenv authtoken}}
+### search patient
+# @prompt phone Patient phone number
+GET https://axis.thejoint.com/rest/v11_24/Contacts/search_patient
+    ?filter%5Bphone_mobile%5D={{phone}}
+OAuth-Token: {{$dotenv authtoken}}
+### get patient
+GET https://axis.thejoint.com/rest/v11_24/Contacts/{{$dotenv patientid}}
+    ?erased_fields=true
+    &view=record
+    &fields=producttype_c%2Cpayment_due%2Cid%2Cbirthdate%2Cpatientcode_c%2Clastvisitdate_c%2Cismedicareeligible_c%2Creferred_by_c%2Csend_forms_c%2Cbundle_type%2Ccarecard_c
+    &viewed=1
+OAuth-Token: {{$dotenv authtoken}}
+### get purchase history
+# @prompt maxNum Maximum allowed results (number)
+GET https://axis.thejoint.com/rest/v11_24/Contacts/{{$dotenv patientid}}/link/contacts_tj_purchases_1
+    ?erased_fields=true
+    &view=subpanel-for-contacts-contacts_tj_purchases_1
+    &fields=purchaseactive%2Cstatus%2Cpurchasetype%2Ctax%2Cmonthlyamount_notax%2Covervisitcost_notax%2Cmy_favorite
+    &max_num={{maxNum}}
+    &order_by=date_entered%3Adesc
+OAuth-Token: {{$dotenv authtoken}}
+### get documents
+# @prompt maxNum Maximum allowed results (number)
+GET https://axis.thejoint.com/rest/v11_24/Contacts/{{$dotenv patientid}}/link/documents
+    ?erased_fields=true
+    &view=subpanel-for-contacts-documents
+    &fields=date_entered%2Cfilename%2Crelated_doc_id%2Ccategory_id%2Cmy_favorite
+    &max_num={{maxNum}}
+    &order_by=date_modified%3Adesc
+    &filter%5B0%5D%5Bis_incorrect_c%5D=false
+OAuth-Token: {{$dotenv authtoken}}
+### get visit history
+# @prompt maxNum Maximum allowed results (number)
+GET https://axis.thejoint.com/rest/v11_24/Contacts/{{$dotenv patientid}}/link/contacts_tj_visits_1
+    ?erased_fields=true
+    &view=preview
+    &fields=date_entered%2Cstatus%2Cvisit_type%2Ctj_clinics_tj_visits_1_name%2Ccontacts_tj_visits_1_name%2Cusers_tj_visits_2_name%2C
+    &max_num={{maxNum}}
+    &order_by=date_entered%3Adesc
+    &filter%5B0%5D%5Bstatus%5D=Completed
+OAuth-Token: {{$dotenv authtoken}}
+### get tasks
+# @prompt maxNum Maximum allowed results (number)
+GET https://axis.thejoint.com/rest/v11_24/Contacts/{{$dotenv patientid}}/link/all_tasks
+    ?erased_fields=true
+    &view=subpanel-for-contacts-all_tasks
+    &fields=parent_name%2Cdescription%2Cparent_type%2Ctask_script_c%2Ctask_disclaimer%2Ctask_type_c%2Cdri_subworkflow_id%2Cmy_favorite
+    &max_num={{maxNum}}
+    &order_by=status%3Adesc
+OAuth-Token: {{$dotenv authtoken}}
+### get office notes
+# @prompt maxNum Maximum allowed results (number)
+GET https://axis.thejoint.com/rest/v11_24/Contacts/{{$dotenv patientid}}/link/contacts_tj_officenotes_1
+    ?erased_fields=true
+    &view=subpanel-for-contacts-contacts_tj_officenotes_1
+    &fields=date_entered%2Cmy_favorite
+    &max_num={{maxNum}}
+    &order_by=date_entered%3Adesc
+OAuth-Token: {{$dotenv authtoken}}
+### get termination/freeze requests
+# @prompt maxNum Maximum allowed results (number)
+GET https://axis.thejoint.com/rest/v11_24/Contacts/{{$dotenv patientid}}/link/contacts_tj_patientrequests_1
+    ?erased_fields=true
+    &view=subpanel-for-contacts-contacts_tj_patientrequests_1
+    &fields=type%2Cstatus%2Creason%2Cdate_entered%2Cid%2Csignpaperforms%2Cmy_favorite
+    &max_num={{maxNum}}
+OAuth-Token: {{$dotenv authtoken}}
+### get digital forms trackers
+# @prompt maxNum Maximum allowed results (number)
+GET https://axis.thejoint.com/rest/v11_24/Contacts/{{$dotenv patientid}}/link/contacts_tj_intakeformstracker_1
+    ?erased_fields=true&view=subpanel-for-contacts-contacts_tj_intakeformstracker_1
+    &fields=my_favorite
+    &max_num={{maxNum}}
+    &order_by=date_modified%3Adesc
+OAuth-Token: {{$dotenv authtoken}}
+### get purchase by id
+# @prompt purchaseId Purchase id
+GET https://axis.thejoint.com/rest/v11_24/TJ_Purchases/{{purchaseId}}
+    ?erased_fields=true
+    &view=record
+    &fields=purchaseactive%2Cstatus%2Cpurchasetype%2Ctax%2Cmonthlyamount_notax%2Covervisitcost_notax
+    &viewed=1
+OAuth-Token: {{$dotenv authtoken}}
+## get document by id
+# @prompt documentId Document id
+GET https://axis.thejoint.com/rest/v11_24/Documents/{{documentId}}
+    ?erased_fields=true
+    &view=record
+    &fields=date_entered%2Cfilename%2Crelated_doc_id%2Ccategory_id
+    &viewed=1
+OAuth-Token: {{$dotenv authtoken}}
+### get visit by id
+GET https://axis.thejoint.com/rest/v11_24/TJ_Visits/{{$dotenv visitid}}
+    ?erased_fields=true
+    &view=record
+    &fields=date_entered%2Cstatus%2Cfilename%2Crelated_doc_id%2Ccategory_id%2Cpurchaseactive%2Cpurchasetype%2Cvisit_price%2Cvisit_type
+    &viewed=1
+OAuth-Token: {{$dotenv authtoken}}
+### get task by id
+# @prompt taskId Task id
+GET https://axis.thejoint.com/rest/v11_24/Tasks/{{taskId}}
+    ?erased_fields=true
+    &view=record
+    &fields=parent_name%2Cdescription%2Cparent_type%2Ctask_script_c%2Ctask_disclaimer%2Ctask_type_c%2Cdri_subworkflow_id%2Cdate_entered%2Cstatus%2Chas_carecard%2Cfilename%2Crelated_doc_id%2Ccategory_id%2Cpurchaseactive%2Cpurchasetype%2Ctax%2Cmonthlyamount_notax%2Covervisitcost_notax
+    &viewed=1
+OAuth-Token: {{$dotenv authtoken}}
+### get office note by id
+# @prompt noteId
+GET https://axis.thejoint.com/rest/v11_24/TJ_OfficeNotes/{{noteId}}
+    ?erased_fields=true
+    &view=record
+    &fields=date_entered%2Cparent_name%2Cdescription%2Cparent_type%2Ctask_script_c%2Ctask_disclaimer%2Ctask_type_c%2Cdri_subworkflow_id
+    &viewed=1
+OAuth-Token: {{$dotenv authtoken}}
+### get termination/freeze request by id
+# @prompt requestId Request id
+GET https://axis.thejoint.com/rest/v11_24/TJ_PatientRequests/{{requestId}}
+    ?erased_fields=true
+    &view=record
+    &fields=type%2Cstatus%2Creason%2Cdate_entered%2Cid%2Csignpaperforms%2Cparent_name%2Cdescription%2Cparent_type%2Ctask_script_c%2Ctask_disclaimer%2Ctask_type_c%2Cdri_subworkflow_id
+    &viewed=1
+OAuth-Token: {{$dotenv authtoken}}
+### get digital forms tracker by id
+# @prompt trackerId
+GET https://axis.thejoint.com/rest/v11_24/TJ_IntakeFormsTracker/4c426638-707a-11f0-9799-06713179836b?erased_fields=true&view=preview&fields=parent_name%2Cdescription%2Cparent_type%2Ctask_script_c%2Ctask_disclaimer%2Ctask_type_c%2Cdri_subworkflow_id%2Cdate_entered%2Cstatus%2Chas_carecard%2Cfilename%2Crelated_doc_id%2Ccategory_id%2Cpurchaseactive%2Cpurchasetype%2Ctax%2Cmonthlyamount_notax%2Covervisitcost_notax&viewed=1
+OAuth-Token: {{$dotenv authtoken}}
+### get pdf soap notes (Jan-Aug)
+GET https://axis.thejoint.com/rest/v11_24/GotenbergPdfManager/download
+    ?module=Contacts
+    &record={{$dotenv patientid}}
+    &template_name=soap-notes
+    &date_entered_from=2025-06-08
+    &date_entered_to=2025-06-09
+OAuth-Token: {{$dotenv authtoken}}
+
+### get all axis users
+GET https://axis.thejoint.com/rest/v11_24/Reports/4b1154ac-d932-11ef-bb71-06a1b33576e2/filter
+    ?use_saved_filters=false
+OAuth-Token: {{$dotenv authtoken}}

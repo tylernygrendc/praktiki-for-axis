@@ -1,13 +1,15 @@
 import { User } from "./axis-user.js";
-import { App } from "./axis-app.js";
+import { BackOfficePatient } from "./axis-patient.js";
 import { extension } from "./extension-meta.js";
 import { Child } from "../_child.js";
+import { Popup } from "../components/_popup.js";
 import { Sheet } from "../components/_sheet.js";
+import { Chipset } from "../components/_chips.js";
 import { List, Li } from "../components/_list.js"; 
 import { Form } from "../components/_form.js";
 import { Tablet, Panel } from "../components/_tabs.js";
 import { Textfield } from "../components/_textfield.js";
-import { RadioList } from "../components/_radio.js";
+import { RadioList, RadioItem, Radio } from "../components/_radio.js";
 import { SwitchList, SwitchItem, Switch } from "../components/_switch.js";
 import { Button } from "../components/_button.js";
 
@@ -34,10 +36,10 @@ export function connectPopup(){
     ]).appendTo(document.body);
 }
 
-function backOfficeUI(user){
-    switch(resource){
-        case "patient-visit":
-            return visitUI();
+function backOfficeUI(user = new User()){
+    switch(user.currentApp.resource){
+        case "cert-create":
+            return visitUI(user);
         case "login":
         case "waiting-queue":
         case "pending-notes":
@@ -70,16 +72,18 @@ function frontOfficeUI(user){
 
 function contactsUI(){
     return [
-        new Sheet("The AXIS Extension")
+        new Sheet("The AXIS Extension",[
+
+        ])
     ];
 }
 
-function visitUI() {
-    if(isCompleteVisit()) return completedVisitUI();
-    else return pendingVisitUI();
+function visitUI(user = new User()) {
+    if(isCompleteVisit()) return completedVisitUI(user);
+    else return pendingVisitUI(user);
 }
 
-function completedVisitUI(){
+function completedVisitUI(user = new User()){
     new Sheet("The AXIS Extension - Completed Visit",[
             new Tablet([
                 new Panel("",[
@@ -90,7 +94,10 @@ function completedVisitUI(){
     )
 }
 
-function pendingVisitUI(){
+function pendingVisitUI(user = new User()){
+
+    const patient = new BackOfficePatient();
+    
     return [
         new Sheet("The AXIS Extension - Pending Visit",[
             new Form([
@@ -108,7 +115,12 @@ function pendingVisitUI(){
             new Tablet([
                 new Panel("Visit",[
                     new Form([
-                        new RadioList()
+                        new RadioList("Reason for visit:", [
+                            RadioItem(),
+                            RadioItem(),
+                            RadioItem(),
+                            RadioItem()
+                        ])
                     ])
                 ]),
                 new Panel("Procedure",[

@@ -1,0 +1,194 @@
+### patient search
+# @prompt fname First name
+# @prompt lname Last name
+# @prompt dob Date of birth
+# @prompt phone Phone
+POST https://backoffice.thejoint.com/patient-search
+x-csrf-token: {{$dotenv csrftoken}}
+
+first_name={{fname}}
+&last_name={{lname}}
+&dob={{dob}}
+&phone={{phone}}
+
+### get patient by id
+GET https://backoffice.thejoint.com/get-patient/{{$dotenv patientid}}/{{$dotenv lastvisitid}}?
+x-csrf-token: {{$dotenv csrftoken}}
+
+### delete complaint (resolved through care)
+POST https://backoffice.thejoint.com/delete-complaint
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5BcomplaintId%5D={{$dotenv complaintid}}
+&data%5Breason_closed%5D=care
+&data%5Bother_reason%5D=
+
+### delete complaint (resolved naturally)
+POST https://backoffice.thejoint.com/delete-complaint
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5BcomplaintId%5D={{$dotenv complaintid}}
+&data%5Breason_closed%5D=naturally
+&data%5Bother_reason%5D=
+
+### delete complaint (resolved through care by another provider)
+POST https://backoffice.thejoint.com/delete-complaint
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5BcomplaintId%5D={{$dotenv complaintid}}
+&data%5Breason_closed%5D=other_care
+&data%5Bother_reason%5D=
+
+### delete complaint (added in error)
+POST https://backoffice.thejoint.com/delete-complaint
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5BcomplaintId%5D={{$dotenv complaintid}}
+&data%5Breason_closed%5D=added_in_error
+&data%5Bother_reason%5D=
+
+### delete complaint (other)
+POST https://backoffice.thejoint.com/delete-complaint
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5BcomplaintId%5D={{$dotenv complaintid}}
+&data%5Breason_closed%5D=other
+&data%5Bother_reason%5D=been+removed+for+system+testing.
+
+### create complaint (maintenance/wellness)
+POST https://backoffice.thejoint.com/create-complaints
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5B0%5D%5BvisitId%5D={{$dotenv visitid}}
+&data%5B0%5D%5BcomplaintName%5D=Maint+Well
+&data%5B0%5D%5Bstatus%5D=Active
+&data%5B0%5D%5BpatientId%5D={{$dotenv patientid}}
+&data%5B0%5D%5Bsame_better_worse%5D=worse
+&data%5B0%5D%5Bdescription%5D=0
+&data%5B0%5D%5Bfrequency%5D=
+&visit_id={{$dotenv visitid}}
+&patient_id={{$dotenv patientid}}
+
+### create complaint (low back pain)
+POST https://backoffice.thejoint.com/create-complaints
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5B0%5D%5BvisitId%5D={{$dotenv visitid}}
+&data%5B0%5D%5BcomplaintName%5D=Low+back+pain
+&data%5B0%5D%5Bstatus%5D=Active
+&data%5B0%5D%5BpatientId%5D={{$dotenv patientid}}
+&data%5B0%5D%5Bsame_better_worse%5D=worse
+&data%5B0%5D%5Bdescription%5D=1
+&data%5B0%5D%5Bfrequency%5D=
+&visit_id={{$dotenv visitid}}
+&patient_id={{$dotenv patientid}}
+
+### create complaint (knee pain)
+POST https://backoffice.thejoint.com/create-complaints
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5B0%5D%5BvisitId%5D={{$dotenv visitid}}
+&data%5B0%5D%5BcomplaintName%5D=Knee+pain
+&data%5B0%5D%5Bstatus%5D=Active
+&data%5B0%5D%5BpatientId%5D={{$dotenv patientid}}
+&data%5B0%5D%5Bsame_better_worse%5D=worse
+&data%5B0%5D%5Bdescription%5D=2
+&data%5B0%5D%5Bfrequency%5D=
+&visit_id={{$dotenv visitid}}
+&patient_id={{$dotenv patientid}}
+
+### import complaints from intake
+POST https://backoffice.thejoint.com/import-complaints
+x-csrf-token: {{$dotenv csrftoken}}
+
+visit_id={{$dotenv visitid}}
+&patient_id={{$dotenv patientid}}
+
+### create treatment
+POST https://backoffice.thejoint.com/create-treatment
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5BpatientId%5D={{$dotenv patientid}}
+&data%5BtreatmentItems%5D%5B0%5D%5Bduration%5D=12
+&data%5BtreatmentItems%5D%5B0%5D%5Bfrequency%5D=1
+&data%5BtreatmentItems%5D%5B0%5D%5Bsort%5D=0
+&data%5Bsessions%5D=12
+&data%5BweeksLength%5D=12
+&data%5BvisitId%5D={{$dotenv visitid}}
+&patient_id={{$dotenv patientid}}
+
+### create treatment (complex)
+POST https://backoffice.thejoint.com/create-treatment
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5BpatientId%5D={{$dotenv patientid}}
+&data%5BtreatmentItems%5D%5B0%5D%5Bduration%5D=2
+&data%5BtreatmentItems%5D%5B0%5D%5Bfrequency%5D=1
+&data%5BtreatmentItems%5D%5B0%5D%5Bsort%5D=0
+&data%5BtreatmentItems%5D%5B1%5D%5Bduration%5D=4
+&data%5BtreatmentItems%5D%5B1%5D%5Bfrequency%5D=1
+&data%5BtreatmentItems%5D%5B1%5D%5Bsort%5D=1
+&data%5BtreatmentItems%5D%5B2%5D%5Bduration%5D=6
+&data%5BtreatmentItems%5D%5B2%5D%5Bfrequency%5D=1
+&data%5BtreatmentItems%5D%5B2%5D%5Bsort%5D=2
+&data%5Bsessions%5D=12&data%5BweeksLength%5D=12
+&data%5BvisitId%5D={{$dotenv visitid}}
+&patient_id={{$dotenv patientid}}
+
+### create diagnosis
+POST https://backoffice.thejoint.com/create-diagnostic
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5B0%5D%5BvisitId%5D={{$dotenv visitid}}
+&data%5B0%5D%5BregularCode%5D=Other
+&data%5B0%5D%5BotherCode%5D=Z41.8
+&data%5B0%5D%5BotherDesc%5D=Encounter+for+other+procedures+for+purposes+other+than+remedying+health+state
+
+### delete diagnosis
+GET https://backoffice.thejoint.com/delete-diagnosis/{{$dotenv diagnosisid}}
+    ?null
+x-csrf-token: {{$dotenv csrftoken}}
+
+### add appended soap note
+
+POST https://backoffice.thejoint.com/add-soap-note
+x-crsf-token: {{$dotenv csrftoken}}
+
+data%5BvisitId%5D={{$dotenv visitid}}
+&data%5Bnotes%5D=This+note+was+entered+as+part+of+a+system+test.+Please+disregard+this+record.
+
+POST https://backoffice.thejoint.com/load-soap-notes
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5BvisitId%5D={{$dotenv visitid}}
+&data%5Boffset%5D=0
+&data%5BmaxNum%5D=20
+
+### get macros
+GET https://backoffice.thejoint.com/shortcuts
+x-csrf-token: {{$dotenv csrftoken}}
+
+### add macro
+# id matches id from GET https://backoffice.thejoint.com/shortcuts response
+POST https://backoffice.thejoint.com/shortcuts
+x-csrf-token: {{$dotenv csrftoken}}
+
+{
+    "id":328,
+    "key_combination":"Alt+a",
+    "normalized_keys":"Alt+a",
+    "value":"This patient is responding as expected. Chiropractic manipulation as prescribed remains appropriate. No change in care is required at this time."
+}
+
+### send home instructions
+POST https://backoffice.thejoint.com/send-home-instruction
+x-csrf-token: {{$dotenv csrftoken}}
+
+data%5Bnecknupperbackex%5D=false
+&data%5Bnecknupperbackstretches%5D=true
+&data%5Bposturalex%5D=false
+&data%5Bcoremuscleex%5D=false
+&data%5Blumbarex%5D=false
+&data%5Blumbarstretches%5D=false
+&data%5Bhipstretches%5D=false
+&data%5Bpatient_id%5D={{$dotenv patientid}}

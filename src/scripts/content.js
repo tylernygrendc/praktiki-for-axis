@@ -21,5 +21,3 @@ window.onload = async () => {
     }
 }
 
-
-
