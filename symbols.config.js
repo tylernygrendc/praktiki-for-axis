@@ -11,17 +11,21 @@ const appearance = {
     symbols = [
         "add",
         "close",
+        "commit",
         "delete",
+        "delete_sweep",
         "download",
         "home",
         "keyboard_arrow_down",
         "keyboard_arrow_left",
         "keyboard_arrow_right",
         "keyboard_arrow_up",
+        "line_end_circle",
         "link",
         "menu",
         "menu_open",
         "open_in_new",
+        "pending",
         "save",
         "search",
         "settings",
@@ -30,7 +34,7 @@ const appearance = {
     output = "material-symbols", woff2 = true;
 
 try {
-    console.log(chalk.yellow(`\nAttempting to update ${symbols.length} symbols...`));
+    console.log(chalk.yellow(`\nUpdating ${symbols.length} symbols...`));
     let res = await fetch(`https://fonts.googleapis.com/css2?family=Material+Symbols+${appearance.style}:opsz,wght,FILL,GRAD@24,${appearance.weight},${appearance.filled?1:0},0&icon_names=${symbols}`);
         res = await res.text();
         res = await fetch(res.split("url(")[1].split(") format")[0]);

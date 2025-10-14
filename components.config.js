@@ -3,27 +3,27 @@ import chalk from "chalk";
 // edit mdc object to reflect desired imports
 const mdc = {
     button: {
-        "elevated-button": false,
+        "elevated-button": true,
         "filled-button": true,
-        "filled-tonal-button": false,
-        "outlined-button": false,
+        "filled-tonal-button": true,
+        "outlined-button": true,
         "text-button": true
     },
     checkbox: {
-        checkbox: false
+        checkbox: true
     },
     chips: {
-        "assist-chip": false,
-        "filter-chip": false,
-        "input-chip": false,
-        "suggestion-chip": false,
-        "chip-set": false
+        "assist-chip": true,
+        "filter-chip": true,
+        "input-chip": true,
+        "suggestion-chip": true,
+        "chip-set": true
     },
     dialog: {
         "dialog": true
     },
     divider: {
-        "divider": false
+        "divider": true
     },
     elevation: {
         "elevation": false
@@ -39,13 +39,13 @@ const mdc = {
     },
     iconbutton:{
         "icon-button": true,
-        "outlined-icon-button": false,
-        "filled-tonal-icon-button": false,
-        "filled-icon-button": false
+        "outlined-icon-button": true,
+        "filled-tonal-icon-button": true,
+        "filled-icon-button": true
     },
     list: {
-        "list-item": false,
-        "list": false
+        "list-item": true,
+        "list": true
     },
     menu: {
         "menu-item": false,
@@ -53,34 +53,34 @@ const mdc = {
         "menu": false   
     },
     progress: {
-        "circular-progress": false,
-        "linear-progress": false
+        "circular-progress": true,
+        "linear-progress": true
     },
     radio: {
-        radio: false
+        radio: true
     },
     ripple: {
         "ripple": false
     },
     select: {
-        "select-option": false,
+        "select-option": true,
         "filled-select": false,
-        "outlined-select": false
+        "outlined-select": true
     },
     slider: {
-        "slider": false
+        "slider": true
     },
     switch: {
-        "switch": false
+        "switch": true
     },
     tabs: {
-        "primary-tab": false,
-        "secondary-tab": false,
-        "tabs": false
+        "primary-tab": true,
+        "secondary-tab": true,
+        "tabs": true
     },
     textfield: {
         "filled-text-field": false,
-        "outlined-text-field": false
+        "outlined-text-field": true
     }
 }
 try {
@@ -94,7 +94,7 @@ try {
             return acc;
         },"");
     })(), (error) => {throw error;});
-    console.log(chalk.greenBright(`\nUpdated _components.mjs !\n`));
+    console.log(chalk.greenBright(`\n_components.mjs has been successfully updated!\n`));
 } catch (error) {
     console.log(error);
     console.log(chalk.redBright(`\nFailed to update _components.mjs !\n`));
