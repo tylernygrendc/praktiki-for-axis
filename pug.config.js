@@ -2,7 +2,7 @@ import {writeFileSync, readdirSync} from "node:fs"
 import chalk from "chalk";
 import * as pug from "pug";
 
-const [inputDirectory, outputDirectory] = [`./src/templates`, `./src/markup`];
+const [inputDirectory, outputDirectory] = [`./src/templates`, `./dist/markup`];
 
 const templates = readdirSync(inputDirectory);
 const existingHTML = readdirSync(outputDirectory);
