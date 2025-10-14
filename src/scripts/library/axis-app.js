@@ -1,7 +1,9 @@
-import kebabCase from "../_string";
-
+import { kebabCase } from "../_string";
+import { Dialog } from "../components/_dialog";
+import { Snackbar } from "../components/_snackbar";
 export class App {
     constructor(){
+        this.log = [];
         this.name = null;
         this.resource = null;
         this.isBackOffice = false;
@@ -19,19 +21,13 @@ export class App {
                 break;
         }
     }
-    async getWaiting(){
+    connectAlert(alert = new Snackbar()){
 
     }
-    async getPending(){
+    connectDialog(dialog = new Dialog()){
 
     }
-    async getCompleted(){
-
-    }
-    async getInClinicDCs(){
-
-    }
-    async getVisitCount(){
+    connectPopup(popup = new Dialog()){
 
     }
 }

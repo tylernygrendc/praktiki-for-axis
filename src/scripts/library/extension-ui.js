@@ -13,27 +13,16 @@ import { RadioList, RadioItem, Radio } from "../components/_radio.js";
 import { SwitchList, SwitchItem, Switch } from "../components/_switch.js";
 import { Button } from "../components/_button.js";
 
-export async function connectExtensionUI(user = new User()) {
+export async function connectExtensionUI() {
+    const user = new User();
     switch(user.currentApp){
         case "axis-front-office": return frontOfficeUI(user);
         case "axis-back-office": return backOfficeUI(user);
     }  
 }
 
-export function disconnectExtensionUI(){
-
-}
-
 export function connectPopup(){
-    new Popup("The AXIS Extension", [
-        new SwitchList([
-            new SwitchItem("Hide Extension UI")
-        ]),
-        new Button("Report a Problem", {icon: "report", variant: "filled-tonal"})
-            .setLink(`${extension.website}/#help`,true),
-        new Button("Help",{icon: "help", variant: "filled"})
-            .setLink(`${extension.website}/#help`,true),
-    ]).appendTo(document.body);
+    
 }
 
 function backOfficeUI(user = new User()){

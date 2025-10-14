@@ -2,7 +2,6 @@ import { assertElement } from "../_utilities";
 import { dayNames, daysBetween, formatDate } from "../_date";
 import { User } from "./axis-user";
 import PdfParse from "pdf-parse";
-import { isValidElement } from "react";
 export class BackOfficePatient {
     constructor(docRef = document, user = new User()){
         // document reference
@@ -167,28 +166,12 @@ export class BackOfficePatient {
                         this.product.pendingCancellation = /yes/gi.test(val);
                         break;
                     case "Last visit date":
-                        this.previousVisit.date = new Date(val.split(/\//g).reduce((acc, cv, i) => {
-                            if(i) acc = `${cv}-${acc}`;
-                            else acc += cv;
-                            return acc;
-                        },""));
-                        this.previousVisit.day = dayNames[this.previousVisit.date.getDay()];
-                        this.previousVisit.daysSince = daysBetween(this.previousVisit.date, new Date());
-                        break;
-                    case "Next exam date":
                         this.plan.end = new Date(val.split(/\//g).reduce((acc, cv, i) => {
                             if(i) acc = `${cv}-${acc}`;
                             else acc += cv;
                             return acc;
                         },""));
                         this.plan.weeksRemaining = Math.ceil(daysBetween(this.plan.end, new Date()) / 7);
-                        break;
-                    case "Treatment":
-                        this.plan.duration = val.split(/for a total of\s/gi)[1];
-                        break;
-                    case "Visits in current treatment":
-                        [this.plan.usedVisits, this.plan.totalVisits] = val.split(/\//g);
-                        this.plan.visitsRemaining = this.plan.totalVisits - this.plan.usedVisits;
                         break;
                 }
             }
@@ -860,17 +843,10 @@ class BackOfficeVisit {
         return array;
     }
     getDiagnosesFromVisit(visit = new Document()){
-        const array = [];
-        let code, description;
-        visit.querySelectorAll("tbody#diagnosticList tr").forEach(tr => {
-            [code, description] = tr.querySelectorAll("td");
-            array.push({
-                code: code.innerText,
-                description: description.innerText
-            });
+        visit.querySelectorAll("tbody#diagnosticList tr td").forEach((td, i) => {
+           if(!(i % 2)) this.diagnoses.push(new Diagnosis(td.innerText));
         });
-        this.diagnoses = array;
-        return array;
+        return this;
     }
     getGoalsFromVisit(visit = new Document()){
         const obj = { short: "", medium: "", long: "" };
@@ -919,78 +895,16 @@ class BackOfficeVisit {
             }
     }
     getNeuroFindingsFromVisit(visit = new Document()){
-        let test;
-        const array = [];
-        visit.querySelectorAll("#pills-neurological tr").forEach(tr => {
-            test = new SpecialTest({category: "neurologic"});
-            tr.querySelectorAll("td").forEach((td, i) => {
-                if(i){
-                    td.querySelectorAll("input").forEach(input => {
-                        if(/l\W/gi.test(input.name)) {
-                            if(input.checked && input.value != 3){
-                                test.result.left.positive = true;
-                                test.result.left.diminished = [true, false][input.value - 1];
-                            }
-                        } else if(/l\W/gi.test(input.name)){
-                            if(input.checked && input.value != 3){
-                                test.result.right.positive = true;
-                                test.result.right.diminished = [true, false][input.value - 1];
-                            }
-                        }
-                        if(i === 1){
-                            if(/sen/gi.test(input.id)){
-                                test.subcategory = "sensory";
-                            } else if(/mus/gi.test(input.id)) {
-                                test.subcategory = "motor"; 
-                            } else if(/bicep||brach||trice||patel||achil/gi.test(input.id)){
-                                test.subcategory = "reflex"; 
-                            }
-                        }
-                    });
-                } else {
-                    test.name = td.innerText;
-                }
-            });
-            if(test.result.isPositive) array.push(test);
+        visit.querySelectorAll("#pills-neurological table tbody tr td button").forEach(button => {
+            this.neuroFindings.push(new NeurologicTest(button.name, button.value));
         });
-        this.neuroFindings = array;
-        return array;
+        return this;
     }
     getOrthoFindingsFromVisit(visit = new Document()){
         visit.querySelectorAll("#pills-orthopedic table tbody tr td button:not(.document-nuances)").forEach(button => {
             this.orthoFindings.push(new OrthopedicTest(button.name, button.value));
-
         });
-        for(const region of Object.keys()){
-            rows = visit.querySelectorAll(`#pills-orthopedic #${region} table tbody tr`);
-            rows.forEach(tr => {
-                test = new SpecialTest({category: "orthopedic", subcategory: "musculoskeletal"});
-                tr.querySelectorAll("td").forEach((td,i) => {
-                    if(i && tr.length > 2){ 
-                        td = td.querySelector("button");
-                        if(/l\W/gi.test(td.name) || /_l_/gi.test(td.name)) {
-                            test.result.right.positive = td.value ? td.value === 2 ? true : false : null;
-                        } else if(/r\W/gi.test(td.name) || /_r_/gi.test(td.name)){
-                            test.result.left.positive = td.value ? td.value === 2 ? true : false : null;
-                        } else if(/_m_/gi.test(td.name)){
-                            test.result.bilateral = td.value ? td.value === 2 ? true : false : null;
-                        }
-                    } else if (i) {
-                        td = td.querySelector("button");
-                        test.result.isPositive = td.value ? td.value === 2 ? true : false : null;
-                    } else {
-                        if(td.innerText){
-                            test.name = td.innerText;
-                        } else {
-                            test.name = td.querySelector("input"); 
-                        }
-                    }
-                });
-                if(test.result.isPositive) obj[region].push(test);
-            });
-        }
-        this.orthoFindings = obj;
-        return obj;
+        return this;
     }
     getPalpatoryFindingsFromVisit(visit = new Document()){
         this.palpatoryFindings = [];
@@ -999,18 +913,15 @@ class BackOfficeVisit {
         });
     }
     getProblemsFromVisit(visit = new Document()){
-        const array = [];
-        let problem, frequency, severity;
         visit.querySelectorAll("#progress tbody tr").forEach(tr => {
-            [problem, frequency, severity] = tr.querySelectorAll("td").slice(1);
-            array.push({
+            const [problem, frequency, severity] = tr.querySelectorAll("td").slice(1);
+            this.problems.push({
                 name: problem.innerText,
                 frequency: frequency.querySelector("select").value,
                 severity: severity.querySelector("select").value
             });
         });
-        this.problems = array;
-        return array;
+        return this;
     }
     getReferralsFromVisit(visit = new Document()){
         const array = [];
@@ -1103,36 +1014,35 @@ class BackOfficeVisit {
         return obj;
     }
     getVitalSignsFromVisit(visit = new Document()){
-        const obj = new Vitals();
+        this.vitalSigns = new Vitals();
         visit.querySelectorAll("#pills-vitals-goals select, #pills-vitals-goals input").forEach(input => {
             if(/systolic|diastolic|location/gi.test(input.name)){
-                obj.blood.bloodPressure[input.name.split(/_c/gi)[0]] = input.value;
+                this.vitalSigns.blood.bloodPressure[input.name.split(/_c/gi)[0]] = input.value;
             } else if(/reading[ft]/gi.test(input.name)){
-                obj.temperature[input.name.split(/reading|_c/gi)[1]] = input.value;
+                this.vitalSigns.temperature[input.name.split(/reading|_c/gi)[1]] = input.value;
             } else if(/height/gi.test(input.name)){
-                obj.height[input.name.split(/height|_c/gi)[1]] = input.value;
+                this.vitalSigns.height[input.name.split(/height|_c/gi)[1]] = input.value;
             } else if(/weight/gi.test(input.name)){
-                if(/report/gi.test(input.name)) obj.weight.source = input.value;
-                else obj.weight.lbs = input.value;
+                if(/report/gi.test(input.name)) this.vitalSigns.weight.source = input.value;
+                else this.vitalSigns.weight.lbs = input.value;
             } else if(/pulse|reading/gi.test(input.name)){
                 switch(input.name){
                     case "pulseside_c":
-                        obj.pulse.side = input.value;
+                        this.vitalSigns.pulse.side = input.value;
                         break;
                     case "pulsepart_c":
-                        obj.pulse.site = input.value;
+                        this.vitalSigns.pulse.site = input.value;
                         break;
                     case "reading_c":
-                        obj.pulse.rate = input.value;
+                        this.vitalSigns.pulse.rate = input.value;
                         break;
                 }
             } else if(/rrate|measured/gi.test(input.name)){
-                if(input.name === "rrate_c") obj.respiration.rate = input.value;
-                else if(input)obj.respiration.position = input.value;
+                if(input.name === "rrate_c") this.vitalSigns.respiration.rate = input.value;
+                else if(input) this.vitalSigns.respiration.position = input.value;
             }
         });
-        this.vitalSigns = obj;
-        return obj;
+        return this;
     }
 }
 class FrontOfficeVisit{
@@ -1365,8 +1275,8 @@ class BackSpasm{
     }
 }
 class Diagnosis {
-    constructor(){
-
+    constructor(code = ""){
+        
     }
 }
 class MotionTest {
@@ -1652,12 +1562,11 @@ class MotionTest {
         };
     }
 }
-class OrthopedicTest{
+class NeurologicTest {
     constructor(name = "", side = ""){
         this.axisRef = name;
         this.name = name.replaceAll(/(?<!othe)[rl]$|[rl]_c|_[lmr]|_[0-9]+/gi,"");
         if(typeof this[`#${this.name}`] === "function") Object.assign(this, this[`#${this.name}`]());
-        else Object.assign(this, this.#lookup(this.name));
         this.side = side ? side : (() => {
             switch(this.axisRef.match(/(?<!othe)[rl]$|[rl]_c|_[lmr]|_[0-9]+/gi,"")){
                 case "l":
@@ -1677,13 +1586,59 @@ class OrthopedicTest{
             isPositive : typeof isPositive === "boolean" ? isPositive : null,
             description: typeof description === "object" ? description : [description]
         }
+        return this;
+    }
+    placeholder(){
+        return {
+            name: "Placeholder",
+            region: "lower extremity", // upper extremity
+            position: "seated", // prone, supine
+            type: "sensory", // reflex, strength
+            for: [],
+            purpose: "",
+            description: "",
+            positive: {
+                "": []
+            }
+        }
+    }
+}
+class OrthopedicTest{
+    constructor(name = "", side = ""){
+        this.axisRef = name;
+        this.name = name.replaceAll(/[rl]$|[rl]_c|_[lmr]|_[0-9]+/gi,""); // ! update to match axis
+        if(typeof this[`#${this.name}`] === "function") Object.assign(this, this[`#${this.name}`]());
+        else Object.assign(this, this.#lookup(this.name));
+        this.side = side ? side : (() => {
+            switch(this.axisRef.match(/(?<!othe)[rl]$|[rl]_c|_[lmr]|_[0-9]+/gi,"")){ // ! update to match axis
+                case "l":
+                    return "left";
+                case "r":
+                    return "right";
+                default:
+                    return "";
+            }
+        })();
+    }
+    get isPositive(){
+        return Object.values(this.result).some((value => {value.isPositive === true}));
+    }
+    addFinding(isPositive = null, description = []){
+        this.result = {
+            isPositive : typeof isPositive === "boolean" ? isPositive : null,
+            description: typeof description === "object" ? description : [description]
+        }
+        return this;
     }
     #lookup(testName = ""){
         switch(testName = ""){
-            case "Empty Can Test":
+            case "Wright's Test":
                 return {
-                    name: "Empty Can Test",
-                    region: "shoulder"
+
+                }
+            case "Adson's Test":
+                return {
+
                 }
         }
     }

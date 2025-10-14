@@ -1,7 +1,7 @@
 import { App } from "./axis-app";
 
 export class User {
-    constructor(app = new App()){
+    constructor(){
         this.authorizedClinics = [];
         this.clinic = {
             id: null,
@@ -18,7 +18,7 @@ export class User {
             company: null
         }
         this.credential = null; 
-        this.currentApp = app;
+        this.currentApp = new App();
         this.email = null;
         this.id = null;
         this.isBetaUser = false;

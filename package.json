@@ -1,24 +1,21 @@
 {
-  "name": "workspace",
-  "version": "0.10",
+  "name": "praktiki",
+  "version": "1.0",
+  "type": "module",
   "exports": {
     "./_*.js": "./src/scripts/_*.js",
     "./package.json": "./package.json"
   },
   "scripts": {
     "compile": "node pug.config.js && sass --no-source-map src/styles:dist/styles && rollup --config rollup.config.js",
-    "deploy": "node pug.config.production.js && npm run sass && rollup --config rollup.config.production.js",
-    "compress": "zip ./dist/* && mkdir compressed && mv ./dist/*.zip ./dist.zip",
+    "compress": "npm run compile && zip ./dist/* && mkdir compressed && mv ./dist/*.zip ./dist.zip",
     "material": "node symbols.config.js && node components.config.js",
     "pug": "node pug.config.js",
-    "rollup": "rollup --config rollup.config.js",
-    "sass": "sass --no-source-map src/styles:dist/styles src/styles/mdc:src/styles/mdc",
-    "serve": "http-server ./dist -c-1 -o"
+    "rollup": "rollup --watch --config rollup.config.js",
+    "sass": "sass --no-source-map -w src/styles:dist/styles src/styles/mdc:src/styles/mdc",
+    "serve": "http-server ./dist -c-1 -o",
+    "ship": "npm run compress"
   },
-  "type": "module",
-  "author": "tylernygren@gmail.com",
-  "license": "GPL-3.0-only",
-  "description": "",
   "dependencies": {
     "@material/web": "^2.2.0",
     "@rollup/plugin-node-resolve": "^15.3.0",
@@ -30,6 +27,7 @@
     "html2pdf": "^0.0.11",
     "pdf-parse": "^1.1.1",
     "pug": "^3.0.3",
+    "qrcode": "^1.5.4",
     "rollup": "^4.24.0",
     "sass": "^1.80.3",
     "ttf2woff2": "^5.0.0"

@@ -2,7 +2,7 @@ import {writeFileSync, readdirSync} from "node:fs"
 import chalk from "chalk";
 import * as pug from "pug";
 
-const [inputDirectory, outputDirectory] = [`./src/templates`, `./dist`] 
+const [inputDirectory, outputDirectory] = [`./src/templates`, `./src/markup`];
 
 const templates = readdirSync(inputDirectory);
 const existingHTML = readdirSync(outputDirectory);
@@ -22,5 +22,5 @@ for(const template of templates) {
         console.log(`${template} => ${html} (${existingHTML.includes(html) ? "updated" : "new"})`);
     }
 }
-
+console.log(chalk.yellow(`\nOutput to ${outputDirectory}/`));
 console.log(chalk.greenBright("\nPug rendering complete!\n"));

@@ -32,9 +32,9 @@ const appearance = {
 try {
     console.log(chalk.yellow(`\nAttempting to update ${symbols.length} symbols...`));
     let res = await fetch(`https://fonts.googleapis.com/css2?family=Material+Symbols+${appearance.style}:opsz,wght,FILL,GRAD@24,${appearance.weight},${appearance.filled?1:0},0&icon_names=${symbols}`);
-    res = await res.text();
-    res = await fetch(res.split("url(")[1].split(") format")[0]);
-    res = await res.arrayBuffer();
+        res = await res.text();
+        res = await fetch(res.split("url(")[1].split(") format")[0]);
+        res = await res.arrayBuffer();
     writeFileSync(`./dist/fonts/${output}.ttf`, Buffer.from(res));
     if(woff2) {
         writeFileSync(`./dist/fonts/${output}.woff2`, ttf2woff2(readFileSync(`./dist/fonts/${output}.ttf`)));

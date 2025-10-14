@@ -1,29 +1,29 @@
-import { appendFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import chalk from "chalk";
-
+// edit mdc object to reflect desired imports
 const mdc = {
     button: {
-        "elevated-button": true,
+        "elevated-button": false,
         "filled-button": true,
-        "filled-tonal-button": true,
-        "outlined-button": true,
+        "filled-tonal-button": false,
+        "outlined-button": false,
         "text-button": true
     },
     checkbox: {
-        checkbox: true
+        checkbox: false
     },
     chips: {
-        "assist-chip": true,
-        "filter-chip": true,
-        "input-chip": true,
-        "suggestion-chip": true,
-        "chip-set": true
+        "assist-chip": false,
+        "filter-chip": false,
+        "input-chip": false,
+        "suggestion-chip": false,
+        "chip-set": false
     },
     dialog: {
         "dialog": true
     },
     divider: {
-        "divider": true
+        "divider": false
     },
     elevation: {
         "elevation": false
@@ -32,96 +32,70 @@ const mdc = {
         "fab": true
     },
     focus: {
-        "focus": true
+        "focus": false
     },
     icon: {
-        "icon": true,
-        "filled-icon-button": false,
-        "filled-tonal-icon-button": false,
+        "icon": true
+    },
+    iconbutton:{
         "icon-button": true,
-        "outlined-icon-button": false
+        "outlined-icon-button": false,
+        "filled-tonal-icon-button": false,
+        "filled-icon-button": false
     },
     list: {
-        "list-item": true,
-        "list": true
+        "list-item": false,
+        "list": false
     },
     menu: {
-        "menu-item": true,
-        "sub-menu": true,
-        "menu": true   
+        "menu-item": false,
+        "sub-menu": false,
+        "menu": false   
     },
     progress: {
-        "circular-progress": true,
-        "linear-progress": true
+        "circular-progress": false,
+        "linear-progress": false
     },
     radio: {
-        radio: true
+        radio: false
     },
     ripple: {
         "ripple": false
     },
     select: {
-        "select-option": true,
+        "select-option": false,
         "filled-select": false,
-        "outlined-select": true
+        "outlined-select": false
     },
     slider: {
-        "slider": true
+        "slider": false
     },
     switch: {
-        "switch": true
+        "switch": false
     },
     tabs: {
-        "primary-tab": true,
-        "secondary-tab": true,
-        "tabs": true
+        "primary-tab": false,
+        "secondary-tab": false,
+        "tabs": false
     },
     textfield: {
         "filled-text-field": false,
-        "outlined-text-field": true
+        "outlined-text-field": false
     }
-}, 
-wc = {
-    check: {
-        "check-item": true,
-        "check-list": true
-    },
-    radio: {
-        "radio-item": true,
-        "radio-list": true
-    },
-    sheet: {
-        "sheet": true,
-    },
-    snackbar: {
-        "snack-bar": true
-    },
-    switch: {
-        "switch-item": true,
-        "switch-list": true
-    },
-    tabs: {
-        "tablist": true,
-        "tab-panel": true
-    }
-}, 
-mdDir = "@material/web",
-wcDir = "./src/scripts/components/custom-elements";
-
-function web(components, path) {
-    let content = "";
-    for(const [folder, files] of Object.entries(components))
-        for(const [file,used] of Object.entries(files))
-            if(used) content += `import "${path}/${folder}/${file}.js";\n`;
-    return content;
 }
-
 try {
     console.log(chalk.yellow(`\nUpdating component import statements...`));
-    writeFileSync(`./src/scripts/web-components.js`, web(mdc, mdDir), (error) => {throw error;});
-    appendFileSync(`./src/scripts/web-components.js`, web(wc, wcDir), (error) => {throw error;});
-    console.log(chalk.greenBright(`\nUpdated web-components.js !\n`));
+    writeFileSync(`./src/scripts/_components.mjs`, (()=>{
+        return Object.entries(mdc).reduce((acc,[folder, files]) => {
+            acc += Object.entries(files).reduce((acc,[file,used]) => {
+                if(used) acc += `import "@material/web/${folder}/${file}.js";\n`;
+                return acc;
+            },"");
+            return acc;
+        },"");
+    })(), (error) => {throw error;});
+    console.log(chalk.greenBright(`\nUpdated _components.mjs !\n`));
 } catch (error) {
     console.log(error);
-    console.log(chalk.redBright(`\nFailed to update web-components.js !\n`));
+    console.log(chalk.redBright(`\nFailed to update _components.mjs !\n`));
 }

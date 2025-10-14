@@ -1,6 +1,5 @@
 import { readdirSync } from "node:fs";
-// TODO: add terser() to plugins at production
-// import terser from "@rollup/plugin-terser";
+import terser from "@rollup/plugin-terser"; // todo: remove from plugins for debugging
 import nodeResolve from "@rollup/plugin-node-resolve"; // needed for material web
 
 const [inputDirectory, outputDirectory] = [`./src/scripts`, `./dist/scripts`];
@@ -15,7 +14,7 @@ export default readdirSync(inputDirectory).reduce((accumulator, currentFile) => 
                 file: `${outputDirectory}/${currentFile.split(".")[0]}.js`,
                 format: "es"
             },
-                plugins: [nodeResolve()]
+                plugins: [nodeResolve(), terser()]
         });
     }
     return accumulator;

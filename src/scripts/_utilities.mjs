@@ -1,5 +1,4 @@
 export const alphabet = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
-
 export function assertElement(element, expectedInterface = HTMLElement){
     if(element instanceof expectedInterface) return test;
     else return expectedInterface;
