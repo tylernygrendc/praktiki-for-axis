@@ -1,3 +1,4 @@
+import { coerce } from "../_type.mjs";
 import { App } from "./axis-app";
 
 export class User {
@@ -91,7 +92,7 @@ export class User {
                 console.error(error);
             }
         }
-    }  
+    }
     async getClinic(id = this.clinic.id){
         if(this.currentApp.isFrontOffice){
             try{
