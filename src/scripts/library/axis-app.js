@@ -1,6 +1,4 @@
 import { kebabCase } from "../_string";
-import { Dialog } from "../components/_dialog";
-import { Snackbar } from "../components/_snackbar";
 export class App {
     constructor(){
         this.log = [];
