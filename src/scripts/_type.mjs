@@ -7,6 +7,10 @@ export const coerce = {
         if(is.boolean(boolean)) return boolean;
         else return fallback;
     },
+    element: (element, fallback = Element) => {
+        if(is.element(element)) return element;
+        else return fallback;
+    },
     function: (f, fallback = function(){}) => {
         if(is.function(f)) return f;
         else return fallback;
@@ -31,6 +35,10 @@ export const is = {
     },
     boolean: (thing) => {
         if(typeof thing === "boolean") return true;
+        else return false;
+    },
+    element: (thing) => {
+        if(thing instanceof Element) return true;
         else return false;
     },
     function: (thing) => {
@@ -58,41 +66,7 @@ export const is = {
         else return false;
     }
 }
-export const not = {
-    array: (thing) => {
-        if(Array.isArray(thing)) return false;
-        else return true;
-    },
-    boolean: (thing) => {
-        if(typeof thing === "boolean") return false;
-        else return true;
-    },
-    function: (thing) => {
-        if(typeof thing === "function") return false;
-        else return true;
-    },
-    null: (thing) => {
-        if(thing === null) return false;
-        else return true;
-    },
-    number: (thing) => {
-        if(typeof thing === "number") return false;
-        else return true;
-    },
-    object: (thing) => {
-        if(typeof thing === "object" && !Array.isArray(thing) && thing != null) return false;
-        else return true;
-    },
-    string: (thing) => {
-        if(typeof thing === "string") return false;
-        else return true;
-    },
-    undefined: (thing) => {
-        if(thing === undefined) return false;
-        else return true;
-    }
-}
 
-export default function getType(thing) {
+export default function typeOf(thing) {
     for(const [key, f] of Object.entries(is)) if(f(thing)) return key;
 }
