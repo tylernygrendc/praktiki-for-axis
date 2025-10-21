@@ -1,5 +1,5 @@
 import { readdirSync } from "node:fs";
-import terser from "@rollup/plugin-terser"; // todo: remove from plugins for debugging
+import terser from "@rollup/plugin-terser";
 import nodeResolve from "@rollup/plugin-node-resolve"; // needed for material web
 
 const [inputDirectory, outputDirectory] = [`./src/scripts`, `./dist/scripts`];
