@@ -2,11 +2,17 @@
     "manifest_version": 3,
     "name": "The AXIS Extension",
     "description": "Simplify and extend The Joint's electronic systems.",
-    "author": "tylernygren@gmail.com",
+    "homepage_url": "",
     "version": "1.0",
+    "version_name":"",
+    "minimum_chrome_version": "116",
+    "options_page": "markup/extension-options.html",
     "action": {
-        "default_icon": "assets/action-icon.png",
+        "default_icon": "icons/16.png",
         "default_title": "The AXIS Extension"
+    },
+    "side_panel": {
+      "default_path": ""
     },
     "content_scripts": [
         {
@@ -18,20 +24,36 @@
             ]
         }
     ],
-    "permissions": ["activeTab"],
-    "background":{
-        "service_worker": "background.js"
-    },
     "web_accessible_resources": [
     {
       "resources": [ 
         "assets/*",
-        "fonts/*"
+        "fonts/*",
+        "icons/*",
+        "markup/*",
+        "scripts/*",
+        "styles/*"
         ],
       "matches": [ 
         "https://axis.thejoint.com/*",
         "https://backoffice.thejoint.com/*"
       ]
     }
-  ]
+  ],
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "background":{
+      "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "https://axis.thejoint.com/*"
+  ],
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  }
 }
