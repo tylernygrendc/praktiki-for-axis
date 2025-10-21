@@ -1,0 +1,17 @@
+#utilities
+    md-icon-button(title="reconnect front office", aria-label="reconnect front office", toggle)
+        md-icon database_off
+        md-icon(slot="selected") database
+    md-icon-button(title="bug report", aria-label="bug report")
+        md-icon bug_report
+    md-icon-button(title="help", aria-label="help")
+        md-icon help
+    md-icon-button(title="report a problem", aria-label="report a problem")
+        md-icon report
+    md-icon-button(title="settings", aria-label="settings")
+        md-icon settings
+    form#axis-login.display-none
+        md-outlined-text-field(label="username", type="text", autocomplete="username")
+        md-outlined-text-field(label="password", type="password", autocomplete="current-password")
+        md-filled-button Reconnect Front Office
+

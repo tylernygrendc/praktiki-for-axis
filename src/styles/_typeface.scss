@@ -2,14 +2,14 @@
 @use "../../node_modules/@material/web/tokens/md-sys-typescale" as tokens;
 @use "../../node_modules/@material/web/typography/typescale" as typescale;
 
+// font-face declarations (extension compatible)
 @font-face {
     font-family: "Roboto";
-    src: url("../assets/roboto.woff2") format("woff2");
+    src: url("chrome-extension://__MSG_@@extension_id__/fonts/roboto.woff2") format("woff2");
 }
-
 @font-face {
     font-family: "Material Symbols";
-    src: url("../assets/material-symbols.woff2") format("woff2");
+    src: url("chrome-extension://__MSG_@@extension_id__/fonts/material-symbols.woff2") format("woff2");
 }
 
 // md default typescale variables
@@ -18,8 +18,8 @@
 }
 // md customized typescale variables
 :root, :host {
-    --md-ref-typeface-brand: "Roboto";
-    --md-ref-typeface-plain: "Roboto";
+    --md-ref-typeface-brand: "Roboto", system-ui, sans-serif;
+    --md-ref-typeface-plain: "system-ui", sans-serif;
     --md-icon-font: "Material Symbols";
 }
 
