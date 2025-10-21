@@ -7,6 +7,12 @@ export function el(attr) {
     if(!(attr.id)) el.id = getRandomId();
     for(const [key, val] of Object.entries(attr)) {
         switch(key){
+            case "attributes":
+                for(const [k, v] of Object.entries(coerce.object(val))) el.setAttribute(k, v);
+                break;
+            case "children":
+                for(const child of coerce.array(val)) if(child instanceof Element) el.append(child);
+                break;
             case "classList":
                 for(const className of coerce.array(val)) el.classList.append(className); 
                 break;
