@@ -12,12 +12,12 @@
     "material": "node symbols.config.js && node components.config.js",
     "pug": "node pug.config.js",
     "rollup": "rollup --watch --config rollup.config.js",
-    "sass": "sass --no-source-map -w src/styles:dist/styles src/styles/mdc:src/styles/mdc",
+    "sass": "sass --no-source-map -w src/styles:dist/styles",
     "serve": "http-server ./dist -c-1 -o",
     "ship": "npm run compress"
   },
   "dependencies": {
-    "@material/web": "^2.2.0",
+    "@material/web": "^2.4.1",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/pug": "^2.0.10",
@@ -25,7 +25,7 @@
     "chalk": "^5.3.0",
     "dotenv": "^17.2.1",
     "html2pdf": "^0.0.11",
-    "pdf-parse": "^1.1.1",
+    "pdf-parse": "^2.4.5",
     "pug": "^3.0.3",
     "qrcode": "^1.5.4",
     "rollup": "^4.24.0",

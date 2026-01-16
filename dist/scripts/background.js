@@ -1,1 +1,8 @@
-chrome.tabs.onUpdated.addListener((async(e,t,a)=>{const s=new URL(a.url);if("backoffice.thejoint.com"===s.host)switch(s.pathname.split("/")[1]){case"/cert-create":await chrome.sidePanel.setOptions({tabId:e,path:"markup/back-office-visit.html",enabled:!0});break;case"/waiting-queue":case"/pending-notes":case"/completed-visits":await chrome.sidePanel.setOptions({tabId:e,path:"markup/back-office-contact.html",enabled:!0});break;default:await chrome.sidePanel.setOptions({tabId:e,path:"markup/side-panel-default.html",enabled:!0})}else if("axis.thejoint.com"===s.host)switch(s.hash.split("/")[0]){case"home":case"contacts":await chrome.sidePanel.setOptions({tabId:e,path:"markup/front-office-contact.html",enabled:!0});break;default:await chrome.sidePanel.setOptions({tabId:e,path:"markup/side-panel-default.html",enabled:!0})}await chrome.sidePanel.setPanelBehavior({openPanelOnActionClick:!0})})),chrome.runtime.onMessage.addListener((async(e,t,a)=>{if("back-office-login"===e.source.event)await(async()=>{try{let t=await fetch("https://axis.thejoint.com/rest/v11_24/oauth2/token",{method:"POST",body:{username:e.body.username,password:e.body.password,client_id:"sugar",platform:"base",client_secret:"",current_language:"en_us",client_info:{current_language:"en_us"}}});if(t.ok)return t=await t.json(),Object.assign(t,{expires:(new Date).getTime()+t.expires_in});throw new Error(t.statusText)}catch(e){return console.error(e),{access_token:"",expires_in:0,token_type:"",scope:null,refresh_token:"",refresh_expires_in:0,download_token:"",expires:(new Date).getTime()}}})()}));
+chrome.runtime.onMessage.addListener(async (req, sender, res) => {
+    switch(request.type) {
+        case "storage":
+            if(req.useSync)
+            if(req.method === "get") ; else if(req.method === "set") ;
+            break;    
+    }
+});

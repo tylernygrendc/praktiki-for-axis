@@ -85,9 +85,9 @@
 
 @include light-theme;
 
-@media (prefers-color-scheme: dark) {
-  @include dark-theme;
-}
+// @media (prefers-color-scheme: dark) {
+//   @include dark-theme;
+// }
 
 .use-light-theme {
   @include light-theme;

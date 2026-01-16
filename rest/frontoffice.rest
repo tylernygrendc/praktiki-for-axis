@@ -1,4 +1,4 @@
-### log in 
+### login 
 POST https://axis.thejoint.com/rest/v11_24/oauth2/token
     ?platform=base
 
@@ -12,14 +12,26 @@ POST https://axis.thejoint.com/rest/v11_24/oauth2/token
     "current_language":"en_us",
     "client_info":{"current_language":"en_us"}
 }
-### logout
-POST https://axis.thejoint.com/rest/v11_24/oauth2/logout
+### refresh login
+POST https://axis.thejoint.com/rest/v11_24/oauth2/token
+    ?platform=base
 
 {
-    "token": "{{$dotenv autgtoken}}",
+  "grant_type": "refresh_token",
+  "client_id": "sugar",
+  "client_secret": "",
+  "refresh_token": "{{$dotenv refreshtoken}}",
+  "platform": "base",
+  "refresh": true
+}
+### logout
+POST https://axis.thejoint.com/rest/v11_24/oauth2/logout
+OAuth-Token: {{$dotenv authtoken}}
+
+{
+    "token": "{{$dotenv authtoken}}",
     "refresh_token":"{{$dotenv refreshtoken}}"   
 }
-
 ### get user
 GET https://axis.thejoint.com/rest/v11_24/me
 OAuth-Token: {{$dotenv authtoken}}

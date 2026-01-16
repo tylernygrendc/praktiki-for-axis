@@ -1,23 +1,9 @@
-html(lang="en")
-    head
-        meta(charset="UTF-8")
-        meta(name="viewport", content="width=device-width, initial-scale=1.0")
-        link(rel="stylesheet", type="text/css", href="styles/contact.css")
-        script(defer src="scripts/contact.js")
-    body
-        include _utilities
-        #patient-summary
-            md-outlined-text-field(label="First Name")
-            md-outlined-text-field(label="Last Name")
-            md-outlined-text-field(label="Date of Birth")
-            md-outlined-text-field(label="Age", type="number")
-            md-outlined-select(label="sex", name="patient-sex")
-                md-select-option(value="male"): div(slot="headline") Male
-                md-select-option(value="female"): div(slot="headline") Female
-            md-outlined-text-field(label="Occupation")
-            md-outlined-text-field(label="Email")
-            md-outlined-text-field(label="Phone")
-            .patient-flags
-                each flag in ["NEW","MEP","ABN","FORMS","EXAM","MINOR","MILITARY","PAY"]
-                    div(id=`axis-flag-${flag.toLowerCase()}`, class="display-none")= flag
-        include _print
+include _utilities
+#praktiki-contact
+    ul#drop-zone
+    md-tabs
+        md-primary-tab#resources-tab(aria-controls="resources-panel") Resources
+        md-primary-tab#communication-tab(aria-controls="communication-panel") Communication
+    #resources-panel(role="tabpanel", aria-labeledby="resources-tab")
+            include _print
+    #communication-panel(role="tabpanel", aria-labeledby="communication-tab", hidden)

@@ -95,3 +95,17 @@ export function formatDate(date = new Date(), model = "mm/dd/yyyy") {
     }
     return numberString;
 }
+export const toMS = {
+    h: (hrs) => {
+        return hrs * 60 * 60000;
+    },
+    m: (min) => {
+        return hrs * 60000;
+    },
+    s: (sec) => {
+        return sec * 1000;
+    },
+    t: (hrs = 0, min = 0, sec = 0) => {
+        return (hrs * 60 * 60000) + (hrs * 60000) + (sec * 1000);
+    }
+}

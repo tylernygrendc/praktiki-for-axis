@@ -1,142 +1,136 @@
-html(lang="en")
-    head
-        meta(charset="UTF-8")
-        meta(name="viewport", content="width=device-width, initial-scale=1.0")
-        link(rel="stylesheet", type="text/css", href="styles/visit.css")
-        script(defer src="scripts/visit.js")
-    body 
-        include _utilities
-        include _summary
-        md-tabs
-            md-primary-tab#sheet-tab-pending(aria-controls="sheet-panel-pending")
-                | Pending
-                md-icon(slot="icon") pending
-            md-primary-tab#sheet-tab-previous(aria-controls="sheet-panel-previous")
-                | Previous
-                md-icon(slot="icon") commit
-            md-primary-tab#sheet-tab-exam(aria-controls="sheet-panel-exam")
-                | Exam
-                md-icon(slot="icon") line_end_circle
-        #panel-pending(role="tabpanel", aria-labelledby="sheet-tab-pending")
-            #pending-type
-                md-outlined-select(label="Visit Type", name="visit-type")
-                    md-select-option(value="exam"): div(slot="headline") Exam
-                    md-select-option(value="treatment"): div(slot="headline") Treatment
-                span - Pending
-            #pending-problems
-                table
-                    caption
-                        | Problem List
-                        md-filled-button
-                            | Add
-                            md-icon(slot="icon") add
-                        md-filled-tonal-button
-                            | Resolve All
-                            md-icon(slot="icon") delete_sweep
-                    thead:tr
-                        th Problem
-                        th Onset
-                        th Severity
-                    tbody
-                    tfoot.display-none: tr
-                        td: md-outlined-text-field(label="New Problem")
-                        td: fieldset
-                            div: label(for="new-problem-onset-acute")
-                                md-checkbox(
-                                    touch-target="wrapper", 
-                                    id="new-problem-onset-acute",
-                                    name="acute")
-                                | Acute 
-                            div: label(for="new-problem-onset-traumatic")
-                                md-checkbox(
-                                    touch-target="wrapper",
-                                    id="new-problem-onset-traumatic",
-                                    name="traumatic")
-                                | Traumatic
-                        td: md-outlined-select(label="Severity", name="new-problem-severity")
-                            md-select-option(value="mild"): div(slot="headline") Mild
-                            md-select-option(value="moderate"): div(slot="headline") Moderate
-                            md-select-option(value="severe"): div(slot="headline") Severe
-                        md-filled-icon-button: md-icon add
-                span#problem-suggestion-chip-set-label.chip-set-label Quick-Add Common Problems
-                md-chip-set#problem-suggestion-chip-set(aria-labelledby="problem-suggestion-chipset-label")
-            #pending-complications
-                table
-                    caption
-                        | Complications, Injuries, and Procedures
-                        md-filled-button
-                            | New
-                            md-icon(slot="icon") add
-                    thead:tr
-                        th Complication
-                        th Category
-                    tbody
-                    tfoot.display-none: tr
-                        td: md-outlined-text-field(label="Complication")
-                        td: md-outlined-select(label="Category", name="complication-category")
-                            md-select-option(value="minor"): div(slot="headline") Complication
-                            md-select-option(value="major"): div(slot="headline") New Problem
-                            md-select-option(value="contraindication"): div(slot="headline") Contraindication
-                        md-filled-icon-button: md-icon add
-                suggestion-chip-set-label.chip-set-label Quick-Add Common Complications
-                md-chip-set#complication-suggestion-chip-set
-            #pending-adverse-events
-                table
-                    caption
-                        | Adverse Events with Treatment
-                        md-filled-button
-                            | New
-                            md-icon(slot="icon") add
-                    thead:tr
-                        th Event
-                        th Severity
-                        th Duration
-                    tbody
-                    tfoot.display-none: tr
-                        td: md-outlined-text-field(label="Adverse Event")
-                        td: md-outlined-select(label="Severity", name="ae-severity")
-                            md-select-option(value="mild"): div(slot="headline") Mild
-                            md-select-option(value="moderate"): div(slot="headline") Moderate
-                            md-select-option(value="severe"): div(slot="headline") Severe
-                        td: md-outlined-select(label="Duration", name="ae-duration")
-                            md-select-option(value="hours"): div(slot="headline") Hours
-                            md-select-option(value="days"): div(slot="headline") Days
-                            md-select-option(value="weeks"): div(slot="headline") Weeks
-                            md-select-option(value="ongoing"): div(slot="headline") Ongoing
-                        md-filled-icon-button: md-icon add
-                suggestion-chip-set-label.chip-set-label Quick-Add Common Events
-                md-chip-set#complication-suggestion-chip-set
-            #pending-diagnoses
-                table
-                    caption
-                        | Diagnoses
-                        md-filled-button
-                            | New
-                            md-icon(slot="icon") add
-                    thead:tr
-                        th Code
-                        th Description
-                    tbody
-                    tfoot.display-none: tr
-                        td: md-outlined-text-field(label="Code")
-                        td: md-outlined-text-field(label="Description")
-                        md-filled-icon-button: md-icon add
-                suggestion-chip-set-label.chip-set-label Quick-Add Common Diagnoses
-                md-chip-set#diagnosis-suggestion-chip-set
-            #pending-treatment
-        #panel-previous(role="tabpanel", aria-labelledby="sheet-tab-previous")
-            p#previous-subjective
-            table#previous-problems
-            p#previous-objective
-            p#previous-assessment
-            table#previous-diagnoses
-            p#previous-plan
-            table#previous-treatment
-        #panel-exam(role="tabpanel", aria-labelledby="sheet-tab-exam")
-            p#exam-subjective
-            table#exam-problems
-            p#exam-objective
-            p#exam-assessment
-            table#exam-diagnoses
-            p#exam-plan
-            table#exam-treatment
+
+include _utilities
+include contact
+md-tabs
+    md-primary-tab#sheet-tab-pending(aria-controls="sheet-panel-pending")
+        | Pending
+        md-icon(slot="icon") pending
+    md-primary-tab#sheet-tab-previous(aria-controls="sheet-panel-previous")
+        | Previous
+        md-icon(slot="icon") commit
+    md-primary-tab#sheet-tab-exam(aria-controls="sheet-panel-exam")
+        | Exam
+        md-icon(slot="icon") line_end_circle
+#panel-pending(role="tabpanel", aria-labelledby="sheet-tab-pending")
+    #pending-type
+        md-outlined-select(label="Visit Type", name="visit-type")
+            md-select-option(value="exam"): div(slot="headline") Exam
+            md-select-option(value="treatment"): div(slot="headline") Treatment
+        span - Pending
+    #pending-problems
+        table
+            caption
+                | Problem List
+                md-filled-button
+                    | Add
+                    md-icon(slot="icon") add
+                md-filled-tonal-button
+                    | Resolve All
+                    md-icon(slot="icon") delete_sweep
+            thead:tr
+                th Problem
+                th Onset
+                th Severity
+            tbody
+            tfoot.display-none: tr
+                td: md-outlined-text-field(label="New Problem")
+                td: fieldset
+                    div: label(for="new-problem-onset-acute")
+                        md-checkbox(
+                            touch-target="wrapper", 
+                            id="new-problem-onset-acute",
+                            name="acute")
+                        | Acute 
+                    div: label(for="new-problem-onset-traumatic")
+                        md-checkbox(
+                            touch-target="wrapper",
+                            id="new-problem-onset-traumatic",
+                            name="traumatic")
+                        | Traumatic
+                td: md-outlined-select(label="Severity", name="new-problem-severity")
+                    md-select-option(value="mild"): div(slot="headline") Mild
+                    md-select-option(value="moderate"): div(slot="headline") Moderate
+                    md-select-option(value="severe"): div(slot="headline") Severe
+                md-filled-icon-button: md-icon add
+        span#problem-suggestion-chip-set-label.chip-set-label Quick-Add Common Problems
+        md-chip-set#problem-suggestion-chip-set(aria-labelledby="problem-suggestion-chipset-label")
+    #pending-complications
+        table
+            caption
+                | Complications, Injuries, and Procedures
+                md-filled-button
+                    | New
+                    md-icon(slot="icon") add
+            thead:tr
+                th Complication
+                th Category
+            tbody
+            tfoot.display-none: tr
+                td: md-outlined-text-field(label="Complication")
+                td: md-outlined-select(label="Category", name="complication-category")
+                    md-select-option(value="minor"): div(slot="headline") Complication
+                    md-select-option(value="major"): div(slot="headline") New Problem
+                    md-select-option(value="contraindication"): div(slot="headline") Contraindication
+                md-filled-icon-button: md-icon add
+        suggestion-chip-set-label.chip-set-label Quick-Add Common Complications
+        md-chip-set#complication-suggestion-chip-set
+    #pending-adverse-events
+        table
+            caption
+                | Adverse Events with Treatment
+                md-filled-button
+                    | New
+                    md-icon(slot="icon") add
+            thead:tr
+                th Event
+                th Severity
+                th Duration
+            tbody
+            tfoot.display-none: tr
+                td: md-outlined-text-field(label="Adverse Event")
+                td: md-outlined-select(label="Severity", name="ae-severity")
+                    md-select-option(value="mild"): div(slot="headline") Mild
+                    md-select-option(value="moderate"): div(slot="headline") Moderate
+                    md-select-option(value="severe"): div(slot="headline") Severe
+                td: md-outlined-select(label="Duration", name="ae-duration")
+                    md-select-option(value="hours"): div(slot="headline") Hours
+                    md-select-option(value="days"): div(slot="headline") Days
+                    md-select-option(value="weeks"): div(slot="headline") Weeks
+                    md-select-option(value="ongoing"): div(slot="headline") Ongoing
+                md-filled-icon-button: md-icon add
+        suggestion-chip-set-label.chip-set-label Quick-Add Common Events
+        md-chip-set#complication-suggestion-chip-set
+    #pending-diagnoses
+        table
+            caption
+                | Diagnoses
+                md-filled-button
+                    | New
+                    md-icon(slot="icon") add
+            thead:tr
+                th Code
+                th Description
+            tbody
+            tfoot.display-none: tr
+                td: md-outlined-text-field(label="Code")
+                td: md-outlined-text-field(label="Description")
+                md-filled-icon-button: md-icon add
+        suggestion-chip-set-label.chip-set-label Quick-Add Common Diagnoses
+        md-chip-set#diagnosis-suggestion-chip-set
+    #pending-treatment
+#panel-previous(role="tabpanel", aria-labelledby="sheet-tab-previous")
+    p#previous-subjective
+    table#previous-problems
+    p#previous-objective
+    p#previous-assessment
+    table#previous-diagnoses
+    p#previous-plan
+    table#previous-treatment
+#panel-exam(role="tabpanel", aria-labelledby="sheet-tab-exam")
+    p#exam-subjective
+    table#exam-problems
+    p#exam-objective
+    p#exam-assessment
+    table#exam-diagnoses
+    p#exam-plan
+    table#exam-treatment

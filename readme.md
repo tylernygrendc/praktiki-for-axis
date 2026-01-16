@@ -1,113 +1,29 @@
 # Praktiki for AXIS
 
-[The AXIS Extension](https://www.github.com/tylernygrendc/the-axis-extension) introduced new functionality to [The Joint Chiropractic's](https://www.thejoint.com/our-story) combined health record and customer management system (AXIS). The scope of that project, however, was limited to automation of front-of-house tasks. Praktiki for AXIS (Praktiki) is a revitalized effort at reshaping medical documentation within the The Joint's clinic system. This project replaces The AXIS Extension.
+[The AXIS Extension](https://www.github.com/tylernygrendc/the-axis-extension) introduced new functionality to [The Joint's](https://www.thejoint.com/our-story) combined health record and customer management system, called AXIS. The scope of that project, however, was limited to front-of-house automation. Praktiki for AXIS (Praktiki) is a revitalized effort at reshaping medical documentation within the The Joint's clinic system. It is intended to replace The AXIS Extension.
+
+Like it's predecessor, Praktiki is a browser extension compatible with Chrome, Edge, Opera, Brave, and Vivaldi ^[A fork of this project will be available for use with Firefox]. It is built with pure JavaScript and utilizes [Rollup](https://rollupjs.org/) to compile scripts to `dist/scripts`. Stylesheets are written with [SCSS](https://sass-lang.com/) and complied to `dist/styles`. HTML is written with [Pug](https://pugjs.org/api/getting-started.html) and compiled to `dist/markup`. It is built with [Material Web](https://material-web.dev) and adheres to the [Material Design System](https://m3.material.io/).
 
 ## Architecture
 
-Like its predecessor, Praktiki is a Chrome browser extension (with cross-compatibility for Edge, Opera, Brave, and Vivaldi and planned support for Firefox). It is built with JavaScript, heavily relying on class-based components. [Rollup](https://rollupjs.org/) is employed for ease of development, compiling content scripts is to `dist/scripts/content.js`. Service workers are complied to `dist/scripts/background.js`. Stylesheets are written and complied with [SCSS](https://sass-lang.com/), accessible at `dist/styles`. Additional web accessible resources are made available via `manifest.json`.
+AXIS consists of two discrete web applications: _back office_ and _front office_. These are assigned the subdomains _backoffice_ and _axis_, respectively. Praktiki provides a uniform interface that automates clicks and requests on behalf of the AXIS user. It also serves as a bridge between to the two systems.
+
+Praktiki's content script creates an `User` instance at `document_idle`. This is a JavaScript class that represents the current signed-in user, their current clinic, and it contains an `App` instance that represents the current webpage and extension UI.
+
+### Printing Documents
+
+`App.printPreview(doc<Element>, options<obj>)` creates a `<praktiki-print-preview>` web component, an extension of the `HTMLIFrameElement`, to which an `Element` is appended. User `click` on any `<td>`, `<p>`, `<h[1-6]>`, or `<span>` will allow for direct edit of any preview text, which may be optionally disabled by passing `allowEdit: false` to `options`. 
+
+The `<praktiki-print-preview>` web component is contained within an `<md-dialog>` with options to "print", "save", and "save and print" by default. The dialog can also be closed and preview removed without initiating an action. Passing `{save: false}` limits the options to just "print" by disabling the corresponding buttons. Passing options `{save: false, allowEdit: false}` bypasses the `<md-dialog>` altogether, calling `PraktikiPrintPreview.print()` immediately and removing `<praktiki-print-preview>` from the DOM `afterprint`.
+
+"Print" calls `MDPrintPreview.print()`, triggering the browser's native print preview and removing `<praktiki-print-preview>` from the DOM `afterprint`. "Save and print" calls `App.uploadToDocuments()` `afterprint` and modifies the DOM to show _in progress_ and _complete_ states before removing `<praktiki-print-preview>`.
+
+### Saving Documents
+
+`App.uploadToDocuments()` takes an `HTMLElement` (the `<praktiki-print-preview>` web component) and converts it to PDF using [html2pdf.js](https://www.npmjs.com/package/html2pdf.js/v/0.9.0). The `output()` method can be used to create a `blob` for upload via `fetch()`. 
 
 ```
-// from manifest.json
-
-{
-    "content_scripts": [
-        {
-            "js": ["content.js"],
-            "css": ["content.css"],
-            "matches": [
-                "https://axis.thejoint.com/*",
-                "https://backoffice.thejoint.com/*"
-            ]
-            "run_at": "document_idle"
-        }
-    ],
-    "background":{
-        "service_worker": "background.js"
-    },
-    "web_accessible_resources": [
-        {
-            "resources": [ 
-                "assets/*",
-                "fonts/*"
-            ],
-            "matches": [ 
-                "https://axis.thejoint.com/*",
-                "https://backoffice.thejoint.com/*"
-            ]
-        }
-    ]
-}
-```
-
-AXIS consists of two discrete web applications: _back office_ and _front office_. These are assigned the subdomains _backoffice_ and _axis_, respectively. Praktiki is, fundamentally, an interface that automates clicks and requests on behalf of the AXIS user. For front office, this is largely for the purpose of compiling and printing specialized documents. Back office includes many of the same functions, but also introduces features that streamline and enhance medical documentation.
-
-Praktiki's content script creates an `User` instance at `document_idle`. This is a JavaScript class that represents the current signed-in user, their current clinic, and it contains an `App` instance that represents the current webpage and extension UI. Depending on the current webpage, a patient can be represented by either `BackOfficePatient` or `FrontOfficePatient`. Both of these classes allow access to core information like name, birthday, age, sex, phone, email, and address, as well as a series of boolean flags representing the patient's identity and account status. These classes also include plan, product, previous visit, and previous exam information, as well as references to each of the documents on the patient's account.
-
-The `constructor()` for both classes takes a `docRef` parameter, which must be an instance of `Document` and defaults to the current `document`.
-
-Due to their reliance of asynchronous data, both of these classes must be initialized with `intitialize()`. Initialization status can be tested with the `isInitialized` property.
-
-```
-const patient = new FrontOfficePatient()
-patient.initialize().then(patient => {
-    console.log(patient.initialized); // true
-});
-```
-
-To keep these classes up-to-date with any DOM changes, `update()` is executed any time the user interacts with AXIS via an `input` event.
-
-### The `BackOfficePatient` class
-
-The `BackOfficePatient` class also includes `generalNotes`, `areasOfConcern`, and `intake` properties that are unique to _back office_. Methods unique to this class include: 
-
-|Method|Description|
-|---|---|
-|`setAdjustments()`|Takes an array of `Adjustment`s. Updates `this` and adjustment tab. Returns `this`.|
-|`setDiagnosisList()`|Takes an array of `Condition`s. Updates `this` and updates the diagnosis record via REST. Returns `this`.|
-|`setGoals()`|Takes an instance of `Goal`s. Updates `this` and updates the goals record. Returns `this`.|
-|`setHomeInstructions()`|Takes an array of `Instruction`s. Updates `this` and home instructions list, and adds print-out to _front office_ documents. Returns `this`.|
-|`setNeuroFindings()`|Takes an array of `SpecialTest`s. Updates `this` and neuro tab. Returns `this`.|
-|`setOrthoFindings()`|Takes an array of `SpecialTest`s. Updates `this` and ortho tab. Returns `this`.|
-|`setPalpatoryFindings()`|Takes an array of `PalpatoryFinding`s. Updates `this` and adjustment tab. Returns `this`.|
-|`setProblemList()`|Takes an array of `Problem`s. Updates `this` and problem record via REST. Returns `this`.|
-|`setTreatment()`|Takes an instance of `Treatment`. Updates `this` and plan tab. Returns `this`.||
-|`setReferral()`||
-|`setVitals()`|Takes an instance of `Vitals`. Updates `this` and vitals tab. Returns `this`.|
-
-### The `FrontOfficePatient` class
-
-The `FrontOfficePatient` class includes several unique properties of its own. These are `savingsAccount`, `billingAddress`, `mobileStatus`, `payment`,`transaction`,`purchase`,`task`,`generalNotes` (distinct from `BackOfficePatient.generalNotes`), `freeze`, and `cancellation`. Methods unique to this class include: 
-
-|Method|Description|
-|---|---|
-|`createSuperbill()`|Returns `HTMLElement`.|
-|`createExcuseSlip()`|Returns `HTMLElement`.|
-|`createWellnessReview()`|Returns `HTMLElement`.|
-
-## Functionality
-
-Documents created with `FrontOfficePatient` methods can be printed via `App.printPreview()`, which takes an `HTMLElement` parameter representing the document to be printed, as well as an `options` object.
-
-```
-App.printPreview(await patient.createSuperbill(), {
-    save: true, // default
-    allowEdit: true // default
-});
-```
-
-### Printing from _Front Office_
-
-`App.printPreview()` creates a `<md-print-preview>` web component, itself an extension of the `HTMLIFrameElement`, to which the given document to be printed(`HTMLElement`) is appended. User `click` on any `<td>`, `<p>`, `<h[1-6]>`, or `<span>` will allow for direct edit of any preview text, which may be optionally disabled by passing `{allowEdit: false}` to `options`. The user is presented with button options to "cancel", "print only", and "print and save" by default. Passing `{save: false}` limits the options to just "cancel" and "print." Disabling both `save` and `allowEdit` will trigger `MDPrintPreview.print()` immediately.
-
-The "cancel" option removes the `<md-print-preview>` element from the DOM `onclick`. "Print only" calls `MDPrintPreview.print()`, triggering the browser's native print preview and removing `<md-print-preview>` from the DOM `afterprint` "Print and save" awaits `App.uploadToDocuments()` `afterprint` and modifies the DOM to show _in progress_ and _complete_ states before removing `<md-print-preview>`.
-
-### Saving Documents to _Front Office_
-
-`App.uploadToDocuments()` takes an `HTMLElement` (the `<md-print-preview>` web component) and converts it to PDF using [html2pdf.js](https://www.npmjs.com/package/html2pdf.js/v/0.9.0). The `output()` method can be used to create a `blob` for upload via `fetch()`. 
-
-```
-import { html2pdf } from "html2pdf.js";
-html2pdf().from(MDPrintPreview).set({
+html2pdf().from(PraktikiPrintPreview).set({
   margin: 1,
   jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
 }).output("blob", {filename: "filename.pdf"}, "pdf").then(async (blob) => {
@@ -121,8 +37,6 @@ html2pdf().from(MDPrintPreview).set({
     }
 });
 ```
-
-### Correcting Document Metadata
 
 The contact record must also be updated after document each upload.
 
@@ -147,11 +61,7 @@ const res = await fetch(https://axis.thejoint.com/rest/v11_24/Contacts/{patient-
 });
 ```
 
-This call may also be used to correct the document's category, subcategory, description, name, or status (`is_incorrect_c: true`). The exact implementation of such features has yet to be determined.
-
-### Printing from _Back Office_
-
-Documents created with `BackOfficePatient` can also be printed with `App.printPreview()`, but the `save` option is not allowed due to cross-origin resource sharing restrictions imposed by AXIS servers. This means that printable documents considered part of the patient's medical record can only be created within _front office_.
+This call may also be used to correct the document's category, subcategory, description, name, or status (`is_incorrect_c: true`).
 
 ### Extension UI
 
@@ -247,5 +157,3 @@ New sentences added by Praktiki will be appended to `value`. Praktiki may use `c
 ### Adding an Exit Button
 
 In a pending visit, Praktiki hides the built-in "Save" and "Complete" buttons in favor of custom "Exit", "Save", and "Complete" buttons.
-
-

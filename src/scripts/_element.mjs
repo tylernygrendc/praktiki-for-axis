@@ -1,12 +1,23 @@
 import { getRandomId } from "./_utilities.mjs";
-import {coerce} from "./_type.mjs";
+import { coerce } from "./_type.mjs";
 import { kebabCase } from "./_string.mjs";
 
-export function el(attr) {
+export class Listener {
+    constructor(event = "", listener = ()=>{} , options = {capture: false, once: false}){
+        this.e = event;
+        this.f = listener;
+        this.o = options;
+    }
+}
+
+export function el(attr = {}) {
     const el = document.createElement(attr.tagName ? attr.tagName : "div");
     if(!(attr.id)) el.id = getRandomId();
     for(const [key, val] of Object.entries(attr)) {
         switch(key){
+            case "aria":
+                for(const [k, v] of Object.entries(coerce.object(val))) el.setAttribute(`aria-${k}`, v);
+                break;
             case "attributes":
                 for(const [k, v] of Object.entries(coerce.object(val))) el.setAttribute(k, v);
                 break;
@@ -14,11 +25,15 @@ export function el(attr) {
                 for(const child of coerce.array(val)) if(child instanceof Element) el.append(child);
                 break;
             case "classList":
-                for(const className of coerce.array(val)) el.classList.append(className); 
+                for(const className of coerce.array(val)) el.classList.add(className); 
                 break;
             case "dataset":
                 for(const [k, v] of Object.entries(coerce.object(val))) el.dataset[k] = v;
                 break;
+            case "listeners":
+                for(const listener of coerce.array(val)){
+                    if(listener instanceof Listener) el.addEventListener(listener.e, listener.f, listener.o);
+                }
             case "style":
                 for(const [k, v] of Object.entries(coerce.object(val))) el.style[kebabCase(k)] = val;
                 break;

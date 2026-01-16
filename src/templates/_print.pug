@@ -1,59 +1,20 @@
-#print
-    md-outlined-select(label="Print")
-        //- md-select-option(value="activity"): div(slot="headline") Coloring Page
-        //- md-select-option(value="instructions"): div(slot="headline") Home Instructions
+#praktiki-print-tool
+    md-outlined-select(label="Resource")
+        md-select-option(value="freeform"): div(slot="headline") Freeform
+        md-select-option(value="instructions"): div(slot="headline") Home Instructions
         md-select-option(value="records"): div(slot="headline") Records Release
-        md-select-option(value="superbill", selected): div(slot="headline") Superbill
+        md-select-option(value="superbill"): div(slot="headline") Superbill
         md-select-option(value="review"): div(slot="headline") Wellness Review
         md-select-option(value="excuse"): div(slot="headline") Work/School Excuse
-        md-select-option(value="custom"): div(slot="headline") Custom
-    form#print-activity
-    form#print-instructions 
-    form#print-records
-    form#print-superbill
-        label(for="#superbill-date-start") Start
-        input#superbill-date-start(type="date", name="start")
-        label(for="#superbill-date-end") End
-        input#superbill-date-end(type="date", name="end")
-    form#print-review
-    form#print-excuse
-        label(for="#excuse-date") Date
-        input#excuse-date(type="date", name="start")
-        label(for="#excuse-expires") Expires
-        input#excuse-date(type="date", name="end")
-        md-list
-            md-list-item: label(for="avoidance-sitting")
-                | Avoid prolonged sitting greater than 30 minutes
-                md-checkbox#avoidance-sitting(touch-target="wrapper", name="sitting")
-            md-list-item: label(for="avoidance-standing")
-                | Avoid prolonged standing greater than 60 minutes
-                md-checkbox#avoidance-standing(touch-target="wrapper", name="standing")
-            md-list-item: label(for="avoidance-lifting")
-                | Avoid heavy lifting greater than 25 pounds
-                md-checkbox#avoidance-lifting(touch-target="wrapper", name="lifting")
-    form#print-custom
-        label(for="#excuse-date") Date
-        input#excuse-date(type="date", name="start")
-        label(for="#excuse-expires") Expires
-        input#excuse-date(type="date", name="end")
-        md-list
-            md-list-item: label(for="avoidance-sitting")
-                | Avoid prolonged sitting greater than 30 minutes
-                md-checkbox#avoidance-sitting(touch-target="wrapper", name="sitting")
-            md-list-item: label(for="avoidance-standing")
-                | Avoid prolonged standing greater than 60 minutes
-                md-checkbox#avoidance-standing(touch-target="wrapper", name="standing")
-            md-list-item: label(for="avoidance-lifting")
-                | Avoid heavy lifting greater than 25 pounds
-                md-checkbox#avoidance-lifting(touch-target="wrapper", name="lifting")
-    md-filled-tonal-button
-        | Print Preview
-        md-icon(slot="icon") pageview
-md-dialog
-    div(slot="headline") Preview
-    form#print-preview(slot="content", method="dialog")
-    div(slot="actions")
-        md-filled-button(form="print-preview")
-            | Save and Print
-            md-icon(slot="icon") database_upload
-        md-text-button(form="print-preview") Print Only
+    md-filled-icon-button(aria-label="print resource"): md-icon print
+    md-outlined-icon-button(aria-label="send resource", disabled): md-icon send
+    md-dialog
+        md-icon(slot="icon") edit_square
+        span(slot="headline")
+            md-icon-button(form="form", value="close", aria-label="close dialog"): md-icon close
+        form#praktiki-print-document-editor(slot="content")
+        span(slot="actions")
+            md-icon-button(title="save to AXIS", aria-label="save to AXIS", toggle)
+                md-icon cloud_upload
+                md-icon(slot="selected") cloud_done
+            md-filled-tonal-button(form="praktiki-print-document-editor", value="close", autofocus) Print
