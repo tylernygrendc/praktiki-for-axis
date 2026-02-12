@@ -1,18 +1,76 @@
-#praktiki-print-tool
-    md-outlined-select(label="Resource")
-        md-select-option(value="freeform"): div(slot="headline") Freeform
-        md-select-option(value="instructions"): div(slot="headline") Home Instructions
-        md-select-option(value="records"): div(slot="headline") Records Release
-        md-select-option(value="superbill"): div(slot="headline") Superbill
-        md-select-option(value="review"): div(slot="headline") Wellness Review
-        md-select-option(value="excuse"): div(slot="headline") Work/School Excuse
-    md-filled-icon-button(aria-label="print resource"): md-icon print
-    md-outlined-icon-button(aria-label="send resource", disabled): md-icon send
+#praktiki-print
+    form.print-document-generator
+        .selector
+            md-outlined-select(label="Print")
+                md-select-option(value="review"): div(slot="headline") Wellness Review
+                md-select-option(value="superbill"): div(slot="headline") Superbill
+                md-select-option(value="excuse"): div(slot="headline") Work/School Excuse
+            md-filled-icon-button(aria-label="print resource"): md-icon print
+        .option
+            .option-review
+                p.description A wellness review is a standardized patient-completed form that quantifies treatment progress and clinic experience. It is designed to help ensure seamless care across providers and clinics.
+            .option-superbill
+                p.description A superbill is an itemized receipt documenting services, diagnosis codes, and procedure codes. Patients can submit this document directly to insurance or HSA providers
+                .modifiers
+                    label(for="superbill-range-start-date") Start Date
+                    input#superbill-range-start-date(type="date", name="superbill-start-date")
+                    label(for="superbill-range-end-date") End Date
+                    input#superbill-range-end-date(type="date", name="superbill-end-date")
+                    md-chip-set
+                        md-suggestion-chip(label="Year to Date")
+                        md-suggestion-chip(label="From Last Exam")
+            .option-excuse
+                p.description An excuse slip validates the patient's absence from work or school. It may include activity modifications, which can be edited during preview.
+                .modifiers
+                    fieldset.md-radio-list
+                        legend Date of Service
+                        md-radio#excuse-today(name="excuse-date", value="today")
+                        label(for="excuse-today") Today's visit
+                    fieldset.md-check-list
+                        legend Recommendation
+                        label(for="limit-lifting")
+                            md-check-box#limit-lifting(name="excuse-recommendation", value="lifting")
+                            | Limit lifting greater than 15 pounds.
+                        label(for="limit-standing")
+                            md-check-box#limit-standing(name="excuse-recommendation", value="standing")
+                            | Limit standing longer than 60 minutes.
+                        label(for="limit-sitting")
+                            md-radio#excuse-today(name="excuse-recommendation", value="sitting")
+                            | Limit sitting longer than 60 minutes.
+        md-outlined-button
+            md-icon(slot="icon") add
+            | Start a Blank Document
+    form.print-resource-selector
+        span.selector 
+            h3 Other Resources
+            md-filled-icon-button(aria-label="print selection"): md-icon print
+        button.print-resource
+            span Low Back and Hips
+        button.print-resource
+            span Neck and Upper Back
+        button.print-resource
+            span Upper Extremity
+        button.print-resource
+            span Lower Extremity
+        button.print-resource
+            span Jaw Dysfunction
+        button.print-resource
+            span Positional Vertigo
+        button.print-resource
+            span Position and Posture
+        button.print-resource
+            span Healthy Lifestyle
     md-dialog
         md-icon(slot="icon") edit_square
         span(slot="headline")
-            md-icon-button(form="form", value="close", aria-label="close dialog"): md-icon close
-        form#praktiki-print-document-editor(slot="content")
+            md-icon-button(form="print-document-editor", value="close", aria-label="close dialog"): md-icon close
+        form#print-document-editor(method="dialog", slot="content")
+            section.header
+                span.topline
+                img.logo
+                span.title
+            section.body
+            section.footer
         span(slot="actions")
             md-icon-button(title="save to AXIS", aria-label="save to AXIS", toggle)
                 md-icon cloud_upload

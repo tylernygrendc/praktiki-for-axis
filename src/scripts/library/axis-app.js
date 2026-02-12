@@ -2,7 +2,6 @@ import { kebabCase } from "../_string";
 import { el, Listener } from "../_element.mjs";
 import { contentStorage } from "./chrome-storage";
 import { toMS } from "../_date.mjs";
-import { Patient } from "./axis-patient";
 export class App {
     constructor(){
         this.log = [];
@@ -33,48 +32,61 @@ export class App {
 
     }
     async connectCoreUI(){
-        switch(this.currentApp.resource){
+        switch(this.resource){
             case "login":
-                document.querySelector(this.currentApp.isBackOffice ? "button[type=submit]" : "a[name=login_button]").addEventListener(async (e) => {
+                document.querySelector(this.isBackOffice ? "button[type=submit]" : "a[name=login_button]").addEventListener("click", async (e) => {
                     e.preventDefault();
                     // collect login details
-                    const username = document.querySelector(this.currentApp.isBackOffice ? "input#user_name" : "input[name=username]").value;
-                    const password = document.querySelector(this.currentApp.isBackOffice ? "input#password" : "input[name=password]").value;
+                    const username = document.querySelector(this.isBackOffice ? "input#user_name" : "input[name=username]").value;
+                    const password = document.querySelector(this.isBackOffice ? "input#password" : "input[name=password]").value;
                     // get tokens from front office
-                    let res = await frontOfficeFetch(`https://axis.thejoint.com/rest/v11_24/oauth2/token?platform=base`,{
+                    let res = await frontOfficeFetch(`https://axis.thejoint.com/rest/v11_24/oauth2/token?platform=base`, {
                         method: "POST",
+                        headers: {
+                            "accept": "application/json, text/javascript, */*; q=0.01",
+                            "cache-control": "no-cache",
+                            "content-type": "application/json",
+                            "pragma": "no-cache",
+                            "sec-fetch-mode": "cors",
+                            "sec-fetch-site": "same-origin",
+                            "x-requested-with": "XMLHttpRequest"
+                        },
                         body: {
+                            "client_id": "sugar",
+                            "client_secret": "",
                             "grant_type": "password",
                             "username": username,
-                            "password": password
+                            "password": password,
+                            "platform": "base"
                         }
                     });
                     // store tokens
                     if(res.ok) {
                         res = await res.json();
                         await contentStorage.set({
-                            oauthToken: { value: res.access_token }
-                        }, "local", toMS.s(res.expires_in));
+                            oauthToken: res.access_token
+                        }, "sync", toMS.s(res.expires_in));
                         await contentStorage.set({
-                            refreshToken: { value: res.refresh_token }
-                        }, "local", toMS.s(res.refresh_expires_in));
+                            refreshToken: res.refresh_token
+                        }, "sync", toMS.s(res.refresh_expires_in));
                         await contentStorage.set({
-                            downloadToken: { value: json.download_token },
-                        }, "local");
+                            downloadToken: res.download_token
+                        }, "sync");
                     }
-                    if(this.currentApp.isBackOffice){
+                    if(this.isBackOffice){
                         // resume normal login
                         res = await fetch("https://backoffice.thejoint.com/login", {
                             method: "POST",
-                            body: `_token=${document.querySelector("meta[name=csrf-token]").content}
-                                &user_name=${username}
-                                &password=${password}
-                                &doctor_status=${document.querySelector("select#doctor_status").value.replaceAll(/\s/gi,"+")}`
+                            credentials: "include",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded",
+                            },
+                            body: `_token=${document.querySelector("meta[name=csrf-token]").content}&user_name=${username}&password=${password}&doctor_status=${document.querySelector("select#doctor_status").value.replaceAll(/\s/gi,"+")}`
                         });
                         // redirect if login successful
                         if(res.ok) window.location.href = "https://backoffice.thejoint.com/pending-notes";
                         else throw new Error(res.statusText);
-                    } else if (this.currentApp.isFrontOffice){
+                    } else if (this.isFrontOffice){
                         // store tokens locally
                         localStorage.setItem("prod:SugarCRM:AuthAccessToken", res.access_token);
                         localStorage.setItem("prod:SugarCRM:AuthRefreshToken", res.refresh_token);
@@ -117,15 +129,16 @@ export class App {
             case "completed-visits":
             case "patient-search":
             case "task-management":
+                let ui = await (async () => {
+                    let res = await fetch(chrome.runtime.getURL("markup/contact.html"));
+                    if(res.ok) return await res.text();
+                    else throw new Error(res.statusText);
+                })();
                 document.querySelector("#app .col-md-2").append(el({
                     tagName: "div",
                     id: "praktiki-core-ui",
                     classList: [],
-                    innerHTML: (async () => {
-                        let res = await fetch(chrome.runtime.getURL("markup/contact.html"));
-                        if(res.ok) return await res.text();
-                        else throw new Error(res.statusText);
-                    })()
+                    innerHTML: ui
                 }));
                 this.enableTabs();
                 this.enableDragContact();
@@ -193,7 +206,7 @@ export class App {
                 node.addEventListener("dragstart", dragBehavior);
             };
             // enable drag initially
-            t.querySelectorAll('tbody tr').forEach(row => {
+            table.querySelectorAll('tbody tr').forEach(row => {
                 enableDragFor(row);
             });
             // enable drag anytime table rows are added
@@ -293,82 +306,76 @@ export class App {
     }
 }
 
-export function frontOfficeFetch(resource, options){
+export function frontOfficeFetch(resource = "", options = {}){
     return chrome.runtime.sendMessage({
         type: "fetch",
         resource: resource,
         options: options
+    }).then(res => {
+        if (!res) throw new Error("No response received from background script.");
+        return {
+            ok: res.ok,
+            status: res.status,
+            statusText: res.statusText,
+            headers: new Headers(res.headers),
+            url: res.url,
+            json: async () => {
+                const text = res.isBinary 
+                    ? new TextDecoder().decode(new Uint8Array(res.body)) 
+                    : res.body;
+                return JSON.parse(text);
+            },
+            text: async () => {
+                res.isBinary ? new TextDecoder().decode(new Uint8Array(res.body)) : res.body
+            },
+            arrayBuffer: async () => {
+                if (res.isBinary) return new Uint8Array(res.body).buffer;
+                return new TextEncoder().encode(res.body).buffer;
+            }
+        };
     });
 }
 
-export function frontOfficeRefresh(refreshToken = ""){
-    contentStorage.get("refreshToken","local").then(token => {
-        this.frontOfficeFetch(`https://axis.thejoint.com/rest/v11_24/oauth2/token?platform=base`,{
-            headers: {
-                method: "POST"
-            },
-            body: {
-                "grant_type": "refresh_token",
-                "refresh_token": token.value,
-                "refresh": true
-            }
-        }).then(res => {
-            if(res.ok) {
-                res.json().then(json => {
-                    contentStorage.set({
-                        oauthToken: { value: json.access_token }
-                    }, "local", toMS.s(json.expires_in)).then(error => {
-                        if(error) console.error(error);
+export function frontOfficeRefresh(){
+    contentStorage.get("refreshToken","sync").then(record => {
+        if(record.ok) frontOfficeFetch(`https://axis.thejoint.com/rest/v11_24/oauth2/token?platform=base`,{
+                method: "POST",
+                body: {
+                    "grant_type": "refresh_token",
+                    "refresh_token": record.results.refreshToken,
+                    "refresh": true
+                }
+            }).then(res => {
+                if(res.ok) {
+                    // update tokens
+                    res.json().then(json => {
+                        contentStorage.set({
+                            oauthToken: json.access_token
+                        }, "sync", toMS.s(json.expires_in)).then(error => {
+                            if(error) console.error(error);
+                        });
+                        contentStorage.set({
+                            refreshToken: json.refresh_token
+                        }, "sync", toMS.s(json.refresh_expires_in)).then(error => {
+                            if(error) console.error(error);
+                        });
+                        contentStorage.set({
+                            downloadToken: json.download_token
+                        }, "sync").then(error => {
+                            if(error) console.error(error);
+                        });
                     });
-                    contentStorage.set({
-                        refreshToken: { value: json.refresh_token }
-                    }, "local", toMS.s(json.refresh_expires_in)).then(error => {
-                        if(error) console.error(error);
-                    });
-                    contentStorage.set({
-                        downloadToken: { value: json.download_token },
-                    }, "local").then(error => {
-                        if(error) console.error(error);
-                    });
-                });
-            } else {
-                throw new Error(res.statusText);
-            }
-        })
+                    // avoid conflict with open front office
+                    if(window.location.hostname === "axis.thejoint.com") {
+                        // store tokens locally
+                        localStorage.setItem("prod:SugarCRM:AuthAccessToken", res.access_token);
+                        localStorage.setItem("prod:SugarCRM:AuthRefreshToken", res.refresh_token);
+                        localStorage.setItem("prod:SugarCRM:DownloadToken", res.download_token);
+                    }
+                } else {
+                    throw new Error(res.statusText);
+                }
+            });
+        else console.error(result.statusText);
     });
 }
-
-contentStorage.get("refreshToken","local").then(token => {
-        this.frontOfficeFetch(`https://axis.thejoint.com/rest/v11_24/oauth2/token?platform=base`,{
-            headers: {
-                method: "POST"
-            },
-            body: {
-                "grant_type": "refresh_token",
-                "refresh_token": token.value,
-                "refresh": true
-            }
-        }).then(res => {
-            if(res.ok) {
-                res.json().then(json => {
-                    contentStorage.set({
-                        oauthToken: { value: json.access_token }
-                    }, "local", toMS.s(json.expires_in)).then(error => {
-                        if(error) console.error(error);
-                    });
-                    contentStorage.set({
-                        refreshToken: { value: json.refresh_token }
-                    }, "local", toMS.s(json.refresh_expires_in)).then(error => {
-                        if(error) console.error(error);
-                    });
-                    contentStorage.set({
-                        downloadToken: { value: json.download_token },
-                    }, "local").then(error => {
-                        if(error) console.error(error);
-                    });
-                });
-            } else {
-                throw new Error(res.statusText);
-            }
-        })
-    });

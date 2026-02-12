@@ -1,0 +1,33 @@
+:root {
+  /* --- Durations --- */
+  /* Short: Used for small utility changes (checkboxes, switches) */
+  --md-sys-motion-duration-short-1: 50ms;
+  --md-sys-motion-duration-short-2: 100ms;
+  --md-sys-motion-duration-short-3: 150ms;
+  --md-sys-motion-duration-short-4: 200ms;
+
+  /* Medium: Used for larger surfaces (menus, snackbars, chips) */
+  --md-sys-motion-duration-medium-1: 250ms;
+  --md-sys-motion-duration-medium-2: 300ms;
+  --md-sys-motion-duration-medium-3: 350ms;
+  --md-sys-motion-duration-medium-4: 400ms;
+
+  /* Long: Used for full-screen transitions or complex dialogs */
+  --md-sys-motion-duration-long-1: 450ms;
+  --md-sys-motion-duration-long-2: 500ms;
+  --md-sys-motion-duration-long-3: 550ms;
+  --md-sys-motion-duration-long-4: 600ms;
+
+  /* --- Easings --- */
+  /* Standard: For things moving within the screen */
+  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  
+  /* Emphasized: Most common—used for expressive elements like FABs or cards */
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  
+  /* Decelerated: Use when elements enter the screen */
+  --md-sys-motion-easing-decelerated: cubic-bezier(0, 0, 0, 1);
+  
+  /* Accelerated: Use when elements leave the screen permanently */
+  --md-sys-motion-easing-accelerated: cubic-bezier(0.3, 0, 1, 1);
+}

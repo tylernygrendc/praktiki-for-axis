@@ -1,0 +1,30 @@
+#praktiki-carbon
+    #carbon-disconnected
+        md-filled-button(aria-label="connect to Carbon")
+            md-icon(slot="icon") lock
+            | Connect to Carbon
+    #carbon-call
+        md-icon-button(toggle, aria-label="send message")
+            md-icon call
+            md-icon(slot="selected") call_end
+    #carbon-conversation
+    #carbon-message
+        md-outlined-text-field(label="Message")
+        md-filled-tonal-icon-button(aria-label="send message"): md-icon send
+    md-dialog
+        div(slot="headline")
+            span Add Carbon to AXIS
+            md-icon-button(form="carbon-connect", value="close", aria-label="close dialog"): md-icon close
+        form#carbon-connect(method="dialog", slot="content")
+            md-linear-progress(value="0.5")
+            section.login-card
+                .logo: img(src="chrome-extension://abhobcfmnkbckafjccjcanohonmceagc/assets/axis_logo.webp", alt="axis logo")
+                md-outlined-text-field(type="email", name="axis-username" autofocus, autocomplete="email")
+                md-outlined-text-field(type="password", name="axis-password", autocomplete="current-password")
+            section.login-card
+                .logo: img(src="chrome-extension://abhobcfmnkbckafjccjcanohonmceagc/assets/axis_logo.webp", alt="carbon logo")
+                md-outlined-text-field(type="email", name="carbon-username", autocomplete="off")
+                md-outlined-text-field(type="password", name="carbon-password", autocomplete="off")
+        div(slot="actions")
+            md-filled-tonal-button#carbon-connect-carbon-submit Connect Carbon
+            

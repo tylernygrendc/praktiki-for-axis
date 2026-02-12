@@ -26,3 +26,45 @@
 body{
     font-family: var(--md-ref-typeface-plain);
 }
+
+$typescale: (
+  "display-large":   (size: 57px, weight: 400, line-height: 64px, spacing: -0.25px),
+  "display-medium":  (size: 45px, weight: 400, line-height: 52px, spacing: 0px),
+  "display-small":   (size: 36px, weight: 400, line-height: 44px, spacing: 0px),
+  
+  "headline-large":  (size: 32px, weight: 400, line-height: 40px, spacing: 0px),
+  "headline-medium": (size: 28px, weight: 400, line-height: 36px, spacing: 0px),
+  "headline-small":  (size: 24px, weight: 400, line-height: 32px, spacing: 0px),
+  
+  "title-large":     (size: 22px, weight: 400, line-height: 28px, spacing: 0px),
+  "title-medium":    (size: 16px, weight: 500, line-height: 24px, spacing: 0.15px),
+  "title-small":     (size: 14px, weight: 500, line-height: 20px, spacing: 0.1px),
+  
+  "label-large":     (size: 14px, weight: 500, line-height: 20px, spacing: 0.1px),
+  "label-medium":    (size: 12px, weight: 500, line-height: 16px, spacing: 0.5px),
+  "label-small":     (size: 11px, weight: 500, line-height: 16px, spacing: 0.5px),
+  
+  "body-large":      (size: 16px, weight: 400, line-height: 24px, spacing: 0.5px),
+  "body-medium":     (size: 14px, weight: 400, line-height: 20px, spacing: 0.25px),
+  "body-small":      (size: 12px, weight: 400, line-height: 16px, spacing: 0.4px),
+);
+
+@mixin set-type($style) {
+  $properties: map.get($typescale, $style);
+
+  @if $properties {
+    font-size: map.get($properties, size);
+    font-weight: map.get($properties, weight);
+    line-height: map.get($properties, line-height);
+    letter-spacing: map.get($properties, spacing);
+  } @else {
+    @warn "The key '#{$style}' does not exist in $typescale.";
+  }
+}
+
+@mixin use-icon() {
+    font-family: "Material Symbols";
+    font-size: 24px;
+    font-weight: 400;
+    font-variation-settings: 'FILL' 0, 'GRAD' 0;
+}

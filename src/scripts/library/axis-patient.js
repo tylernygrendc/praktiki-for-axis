@@ -145,6 +145,9 @@ export class Patient {
                 new Promise((resolve, reject) => {
                     frontOfficeFetch("https://axis.thejoint.com/rest/v11_24/bulk", {
                         method: "POST", 
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
                         body: { requests: requests }
                     }).then(res => {
                         if(res.ok) {

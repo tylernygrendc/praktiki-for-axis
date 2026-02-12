@@ -27,8 +27,6 @@ export class User {
         this.name = null;
         this.prefix = null;
         this.role = null;
-        this.oauthToken = "";
-        this.csrfToken = "";
         this.settings = {}
         this.username = null;
     }
@@ -57,7 +55,7 @@ export class User {
         }
     }
     getUser() {
-        new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             // get current user from front office
             frontOfficeFetch("https://axis.thejoint.com/rest/v11_24/me").then(res => {
                 if(res.ok) res.json().then(json => { resolve(json); });
@@ -83,11 +81,11 @@ export class User {
             this.isBetaUser = json.current_user.beta_features;
 
             // check if this is the primary user
-            contentStorage.get("primaryUser", "sync").then(primaryUser => {
-                if(primaryUser.username === this.username) {
+            return contentStorage.get("primaryUser", "sync").then(record => {
+                if(record.results.primaryUser.username === this.username) {
                     this.isPrimaryUser = true;
                     this.settings = primaryUser.settings;
-                } else if(primaryUser === null) {
+                } else if(record.results.primaryUser === null) {
                     // sync storage has not been enabled
                     // the user defaults to primary
                     this.isPrimaryUser = true;

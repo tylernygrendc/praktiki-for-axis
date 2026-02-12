@@ -1,0 +1,7 @@
+#praktiki-bottom-sheet(data-state="open")
+    header
+        h2.headline 
+        md-icon-button.state-toggle(aria-label="collapse bottom sheet", toggle)
+            md-icon bottom_panel_close
+            md-icon(slot="selected") bottom_panel_open
+    block content

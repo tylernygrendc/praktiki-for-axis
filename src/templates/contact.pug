@@ -1,9 +1,37 @@
-include _utilities
-#praktiki-contact
-    ul#drop-zone
-    md-tabs
-        md-primary-tab#resources-tab(aria-controls="resources-panel") Resources
-        md-primary-tab#communication-tab(aria-controls="communication-panel") Communication
-    #resources-panel(role="tabpanel", aria-labeledby="resources-tab")
+extends side-sheet
+
+block content
+    #praktiki-contact
+        #contact-drop-zone
+        nav#contact-primary-navigation
+            md-outlined-button(aria-label="go to profile", disabled) Go to Profile
+            md-outlined-button(aria-label="open in carbon", trailing-icon, disabled)
+            md-icon(slot="icon") open_in_new
+            | Open in Carbon
+        md-tabs#contact-primary-tabs
+            md-primary-tab#print-tab(aria-controls="print-panel")
+                md-icon(slot="icon") print
+                | Print
+            md-primary-tab#carbon-tab(aria-controls="carbon-panel")
+                md-icon(slot="icon") chat
+                | Carbon
+            md-primary-tab#plan-tab(aria-controls="product-panel")
+                md-icon(slot="icon") loyalty
+                | Product
+            md-primary-tab#plan-tab(aria-controls="report-panel")
+                md-icon(slot="icon") bar_chart
+                | Reports
+        #print-panel(role="tabpanel", aria-labeledby="print-tab")
             include _print
-    #communication-panel(role="tabpanel", aria-labeledby="communication-tab", hidden)
+        #carbon-panel(role="tabpanel", aria-labeledby="carbon-tab")
+            include _carbon
+        #product-panel(role="tabpanel", aria-labeledby="product-tab")
+            include _product
+        #report-panel(role="tabpanel", aria-labeledby="report-panel")
+            include _report
+    #praktiki-contact--collapsed-view
+        md-icon-button(aria-label="open print tool"): md-icon print
+        md-icon-button(aria-label="open carbon tool"): md-icon chat
+        md-icon-button(aria-label="open product tool"): md-icon loyalty
+        md-icon-button(aria-label="open report tool"): md-icon bar_chart
+        

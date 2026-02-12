@@ -1,0 +1,7 @@
+#praktiki-side-sheet(data-state="open")
+    header
+        h2.headline 
+        md-icon-button.state-toggle(aria-label="collapse side sheet", toggle)
+            md-icon right_panel_close
+            md-icon(slot="selected") right_panel_open
+    block content
